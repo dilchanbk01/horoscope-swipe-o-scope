@@ -8,6 +8,8 @@ import NavBar from "./components/NavBar";
 import Index from "./pages/Index";
 import PersonalPage from "./pages/Personal";
 import CompatibilityPage from "./pages/Compatibility";
+import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/personal" element={<PersonalPage />} />
               <Route path="/compatibility" element={<CompatibilityPage />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

@@ -1,16 +1,39 @@
 
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import ZodiacCard from '@/components/ZodiacCard';
 import SwipeControls from '@/components/SwipeControls';
 import { useSwipe } from '@/hooks/useSwipe';
 import { zodiacSigns } from '@/utils/zodiacData';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [likedSigns, setLikedSigns] = useState<string[]>([]);
   const [starElements, setStarElements] = useState<React.ReactNode[]>([]);
+  const [user, setUser] = useState<any | null>(null);
+
+  // Check for authenticated user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    };
+    
+    getUser();
+    
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+    
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   // Create stars for the background
   useEffect(() => {
@@ -42,15 +65,40 @@ const Index = () => {
     console.log('Swiped left (dislike):', zodiacSigns[index].name);
   };
 
-  const handleSwipeRight = (index: number) => {
+  const handleSwipeRight = async (index: number) => {
     const signName = zodiacSigns[index].name;
     console.log('Swiped right (like):', signName);
     
     if (!likedSigns.includes(signName)) {
       setLikedSigns([...likedSigns, signName]);
+      
+      // If user is logged in, save to favorites
+      if (user) {
+        try {
+          const { error } = await supabase
+            .from('favorite_signs')
+            .insert([
+              { user_id: user.id, sign_name: signName }
+            ]);
+            
+          if (error && error.code !== '23505') { // Ignore duplicate key error
+            console.error('Error saving favorite:', error);
+            toast({
+              title: "Error",
+              description: "Failed to save to favorites",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+      
       toast({
         title: `Added ${signName} to your favorites!`,
-        description: "Check your profile to see all your favorite signs.",
+        description: user 
+          ? "Visit your profile to see all your favorite signs."
+          : "Sign in to save your favorites permanently.",
         icon: <Sparkles className="h-5 w-5 text-zodiac-stardust-gold" />,
       });
     }
@@ -148,6 +196,13 @@ const Index = () => {
               <li>
                 Click on the navigation links to explore your personal horoscope and check compatibility
               </li>
+              {!user && (
+                <li className="mt-4 pt-2 border-t border-white/10">
+                  <Link to="/auth" className="text-zodiac-stardust-gold hover:underline">
+                    Sign in or create an account
+                  </Link> to save your favorite signs and preferences
+                </li>
+              )}
             </ul>
           </div>
         )}
