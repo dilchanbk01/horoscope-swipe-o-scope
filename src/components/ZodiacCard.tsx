@@ -3,6 +3,7 @@ import React from 'react';
 import { ZodiacSign } from '../utils/zodiacData';
 import { ArrowLeft, ArrowRight, Heart, X, Battery } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ZodiacCardProps {
   sign: ZodiacSign;
@@ -57,39 +58,41 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
         </div>
         
         {/* Card body - with ScrollArea for better scrolling */}
-        <div className="flex-1 p-6 overflow-auto">
-          <div className="mb-6">
-            <h3 className="text-lg text-white/90 font-medium mb-2">Today's Horoscope</h3>
-            <p className="text-white/80">{sign.dailyHoroscope}</p>
-          </div>
-          
-          <div className="mb-6">
-            <h3 className="text-lg text-white/90 font-medium mb-2">Social Energy</h3>
-            <div className="flex items-center gap-3 mb-2">
-              <Battery size={20} className="text-zodiac-stardust-gold" />
-              <span className="text-sm text-white/80">{socialEnergyLevel}% Social Energy</span>
+        <ScrollArea className="flex-1">
+          <div className="p-6">
+            <div className="mb-6">
+              <h3 className="text-lg text-white/90 font-medium mb-2">Today's Horoscope</h3>
+              <p className="text-white/80">{sign.dailyHoroscope}</p>
             </div>
-            <Progress value={socialEnergyLevel} className="h-2 bg-white/10" />
-            <p className="mt-2 text-sm text-white/70">
-              {socialEnergyLevel > 70 
-                ? "High social energy today! Great time for gatherings and connections." 
-                : socialEnergyLevel > 40 
-                  ? "Moderate social energy. Balance social time with personal space."
-                  : "Lower social energy today. Consider quiet activities and self-care."}
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="text-lg text-white/90 font-medium mb-2">Best Compatibility</h3>
-            <div className="flex flex-wrap gap-2">
-              {sign.compatibility.map((match, index) => (
-                <span key={index} className="px-3 py-1 rounded-full bg-white/10 text-xs">
-                  {match}
-                </span>
-              ))}
+            
+            <div className="mb-6">
+              <h3 className="text-lg text-white/90 font-medium mb-2">Social Energy</h3>
+              <div className="flex items-center gap-3 mb-2">
+                <Battery size={20} className="text-zodiac-stardust-gold" />
+                <span className="text-sm text-white/80">{socialEnergyLevel}% Social Energy</span>
+              </div>
+              <Progress value={socialEnergyLevel} className="h-2 bg-white/10" />
+              <p className="mt-2 text-sm text-white/70">
+                {socialEnergyLevel > 70 
+                  ? "High social energy today! Great time for gatherings and connections." 
+                  : socialEnergyLevel > 40 
+                    ? "Moderate social energy. Balance social time with personal space."
+                    : "Lower social energy today. Consider quiet activities and self-care."}
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="text-lg text-white/90 font-medium mb-2">Best Compatibility</h3>
+              <div className="flex flex-wrap gap-2">
+                {sign.compatibility.map((match, index) => (
+                  <span key={index} className="px-3 py-1 rounded-full bg-white/10 text-xs">
+                    {match}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollArea>
         
         {/* Card footer */}
         <div className="p-4 border-t border-white/10 flex justify-between">

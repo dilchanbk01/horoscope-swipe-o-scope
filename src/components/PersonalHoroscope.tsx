@@ -6,6 +6,7 @@ import { formatDate } from '../utils/dateUtils';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Sparkles } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const PersonalHoroscope: React.FC = () => {
   const [day, setDay] = useState<string>('');
@@ -131,22 +132,24 @@ const PersonalHoroscope: React.FC = () => {
               <TabsTrigger value="daily">Daily</TabsTrigger>
               <TabsTrigger value="weekly">Weekly</TabsTrigger>
             </TabsList>
-            <TabsContent value="daily" className="mt-4 space-y-4">
-              <div className="bg-white/5 rounded-lg p-4">
-                <div className="flex items-center gap-2 text-sm text-white/70 mb-2">
-                  <Calendar size={16} />
-                  <span>{formatDate(new Date())}</span>
+            <ScrollArea className="h-[400px] mt-4">
+              <TabsContent value="daily" className="mt-4 space-y-4">
+                <div className="bg-white/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-sm text-white/70 mb-2">
+                    <Calendar size={16} />
+                    <span>{formatDate(new Date())}</span>
+                  </div>
+                  <p className="text-white/90">{horoscope}</p>
                 </div>
-                <p className="text-white/90">{horoscope}</p>
-              </div>
-            </TabsContent>
-            <TabsContent value="weekly" className="mt-4 space-y-4">
-              {weeklyHoroscope?.map((daily, index) => (
-                <div key={index} className="bg-white/5 rounded-lg p-4">
-                  <p className="text-white/90">{daily}</p>
-                </div>
-              ))}
-            </TabsContent>
+              </TabsContent>
+              <TabsContent value="weekly" className="mt-4 space-y-4">
+                {weeklyHoroscope?.map((daily, index) => (
+                  <div key={index} className="bg-white/5 rounded-lg p-4 mb-3">
+                    <p className="text-white/90">{daily}</p>
+                  </div>
+                ))}
+              </TabsContent>
+            </ScrollArea>
           </Tabs>
           
           <Button 

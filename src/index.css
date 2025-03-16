@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
@@ -44,9 +43,18 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-gradient-cosmic text-foreground antialiased overflow-hidden;
+  html, body {
+    @apply bg-gradient-cosmic text-foreground antialiased;
     background-attachment: fixed;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
+  }
+
+  body {
+    /* Remove overflow: hidden to allow scrolling */
+    overflow-y: auto;
   }
 
   ::-webkit-scrollbar {
