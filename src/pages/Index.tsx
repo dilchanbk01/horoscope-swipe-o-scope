@@ -5,7 +5,7 @@ import SwipeControls from '@/components/SwipeControls';
 import { useSwipe } from '@/hooks/useSwipe';
 import { zodiacSigns } from '@/utils/zodiacData';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [showInfo, setShowInfo] = useState(false);
@@ -48,7 +48,8 @@ const Index = () => {
     
     if (!likedSigns.includes(signName)) {
       setLikedSigns([...likedSigns, signName]);
-      toast(`Added ${signName} to your favorites!`, {
+      toast({
+        title: `Added ${signName} to your favorites!`,
         description: "Check your profile to see all your favorite signs.",
         icon: <Sparkles className="h-5 w-5 text-zodiac-stardust-gold" />,
       });

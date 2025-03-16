@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { zodiacSigns } from '@/utils/zodiacData';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Heart } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/hooks/use-toast';
 
 const CompatibilityPage = () => {
   const [firstSign, setFirstSign] = useState<string>('');
@@ -15,7 +15,11 @@ const CompatibilityPage = () => {
 
   const generateCompatibility = () => {
     if (!firstSign || !secondSign) {
-      toast.error('Please select both zodiac signs');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select both zodiac signs",
+      });
       return;
     }
 
@@ -55,7 +59,8 @@ const CompatibilityPage = () => {
 
     setCompatibility({ percentage, description });
     
-    toast.success(`Compatibility check complete!`, {
+    toast({
+      title: "Compatibility check complete!",
       description: `${firstSign} and ${secondSign} are ${percentage}% compatible`,
       icon: <Heart className="h-5 w-5 text-pink-500" />,
     });
