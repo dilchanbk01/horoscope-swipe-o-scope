@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ZodiacCard from '@/components/ZodiacCard';
@@ -5,12 +6,11 @@ import SwipeControls from '@/components/SwipeControls';
 import { useSwipe } from '@/hooks/useSwipe';
 import { zodiacSigns } from '@/utils/zodiacData';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [showInfo, setShowInfo] = useState(false);
-  const [likedSigns, setLikedSigns] = useState<string[]>([]);
   const [starElements, setStarElements] = useState<React.ReactNode[]>([]);
   const [user, setUser] = useState<any | null>(null);
 
@@ -64,42 +64,9 @@ const Index = () => {
     console.log('Swiped left (dislike):', zodiacSigns[index].name);
   };
 
-  const handleSwipeRight = async (index: number) => {
+  const handleSwipeRight = (index: number) => {
     const signName = zodiacSigns[index].name;
-    console.log('Swiped right (like):', signName);
-    
-    if (!likedSigns.includes(signName)) {
-      setLikedSigns([...likedSigns, signName]);
-      
-      // If user is logged in, save to favorites
-      if (user) {
-        try {
-          const { error } = await supabase
-            .from('favorite_signs')
-            .insert([
-              { user_id: user.id, sign_name: signName }
-            ]);
-            
-          if (error && error.code !== '23505') { // Ignore duplicate key error
-            console.error('Error saving favorite:', error);
-            toast({
-              title: "Error",
-              description: "Failed to save to favorites",
-              variant: "destructive",
-            });
-          }
-        } catch (error) {
-          console.error('Error:', error);
-        }
-      }
-      
-      toast({
-        title: `Added ${signName} to your favorites!`,
-        description: user 
-          ? "Visit your profile to see all your favorite signs."
-          : "Sign in to save your favorites permanently.",
-      });
-    }
+    console.log('Swiped right (explore):', signName);
   };
 
   const {
@@ -138,23 +105,25 @@ const Index = () => {
         </p>
       </div>
       
-      <div 
-        ref={containerRef}
-        className="swipeable-card-stack w-full max-w-[600px] h-[450px] md:h-[500px]"
-        {...handlers}
-      >
+      <ScrollArea className="w-full max-w-[600px] h-[450px] md:h-[500px]">
         <div 
-          className={`swipeable-card card-glass ${state.isSwiping ? 'swiping' : ''}`} 
-          style={cardStyle}
+          ref={containerRef}
+          className="swipeable-card-stack w-full max-w-[600px] h-[450px] md:h-[500px]"
+          {...handlers}
         >
-          <ZodiacCard 
-            sign={currentSign} 
-            isActive={true}
-            onSwipeLeft={goToPrevious}
-            onSwipeRight={goToNext}
-          />
+          <div 
+            className={`swipeable-card card-glass ${state.isSwiping ? 'swiping' : ''}`} 
+            style={cardStyle}
+          >
+            <ZodiacCard 
+              sign={currentSign} 
+              isActive={true}
+              onSwipeLeft={goToPrevious}
+              onSwipeRight={goToNext}
+            />
+          </div>
         </div>
-      </div>
+      </ScrollArea>
       
       <SwipeControls
         onPrevious={goToPrevious}
@@ -189,7 +158,7 @@ const Index = () => {
                 <ArrowLeft size={16} /> Swipe left to skip to the previous sign
               </li>
               <li className="flex items-center gap-2">
-                <ArrowRight size={16} /> Swipe right to like and go to the next sign
+                <ArrowRight size={16} /> Swipe right to explore and go to the next sign
               </li>
               <li>
                 Click on the navigation links to explore your personal horoscope and check compatibility
@@ -198,7 +167,7 @@ const Index = () => {
                 <li className="mt-4 pt-2 border-t border-white/10">
                   <Link to="/auth" className="text-zodiac-stardust-gold hover:underline">
                     Sign in or create an account
-                  </Link> to save your favorite signs and preferences
+                  </Link> to access additional features
                 </li>
               )}
             </ul>

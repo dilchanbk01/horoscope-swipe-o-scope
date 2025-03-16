@@ -35,9 +35,10 @@ const NavBar: React.FC = () => {
     { path: '/', label: 'Horoscopes' },
     { path: '/personal', label: 'Your Horoscope' },
     { path: '/compatibility', label: 'Compatibility' },
+    { path: '/auth', label: 'Sign In' },
   ];
   
-  // Add profile and settings links for authenticated users
+  // Add profile link for authenticated users
   const authLinks = user ? [
     { path: '/profile', label: 'Profile' },
   ] : [];
@@ -88,13 +89,10 @@ const NavBar: React.FC = () => {
               </li>
             ))}
           </ul>
-          
-          <AuthButton user={user} />
         </nav>
         
         {/* Mobile menu button */}
         <div className="flex items-center gap-4 md:hidden">
-          <AuthButton user={user} />
           <button
             className="p-2 rounded-full hover:bg-white/10 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}

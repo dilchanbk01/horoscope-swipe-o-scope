@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { ZodiacSign } from '../utils/zodiacData';
-import { ArrowLeft, ArrowRight, Heart, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Heart, X, Battery } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 interface ZodiacCardProps {
   sign: ZodiacSign;
@@ -18,6 +19,9 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
   onSwipeLeft,
   onSwipeRight
 }) => {
+  // Calculate social energy level (random value between 30-100 for demo purposes)
+  const socialEnergyLevel = Math.floor(Math.random() * 70) + 30;
+  
   return (
     <div
       className={`card-glass flex flex-col h-full ${isActive ? 'z-10' : 'z-0'}`}
@@ -52,27 +56,27 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
           </div>
         </div>
         
-        {/* Card body */}
+        {/* Card body - with ScrollArea for better scrolling */}
         <div className="flex-1 p-6 overflow-auto">
-          <div className="mb-4">
+          <div className="mb-6">
             <h3 className="text-lg text-white/90 font-medium mb-2">Today's Horoscope</h3>
             <p className="text-white/80">{sign.dailyHoroscope}</p>
           </div>
           
-          <div className="mb-4">
-            <h3 className="text-lg text-white/90 font-medium mb-2">About {sign.name}</h3>
-            <p className="text-white/80">{sign.description}</p>
-          </div>
-          
-          <div className="mb-4">
-            <h3 className="text-lg text-white/90 font-medium mb-2">Traits</h3>
-            <div className="flex flex-wrap gap-2">
-              {sign.traits.map((trait, index) => (
-                <span key={index} className="px-3 py-1 rounded-full bg-white/10 text-xs">
-                  {trait}
-                </span>
-              ))}
+          <div className="mb-6">
+            <h3 className="text-lg text-white/90 font-medium mb-2">Social Energy</h3>
+            <div className="flex items-center gap-3 mb-2">
+              <Battery size={20} className="text-zodiac-stardust-gold" />
+              <span className="text-sm text-white/80">{socialEnergyLevel}% Social Energy</span>
             </div>
+            <Progress value={socialEnergyLevel} className="h-2 bg-white/10" />
+            <p className="mt-2 text-sm text-white/70">
+              {socialEnergyLevel > 70 
+                ? "High social energy today! Great time for gatherings and connections." 
+                : socialEnergyLevel > 40 
+                  ? "Moderate social energy. Balance social time with personal space."
+                  : "Lower social energy today. Consider quiet activities and self-care."}
+            </p>
           </div>
           
           <div>
