@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { zodiacSigns } from '@/utils/zodiacData';
 import { Button } from '@/components/ui/button';
@@ -62,7 +61,6 @@ const CompatibilityPage = () => {
     toast({
       title: "Compatibility check complete!",
       description: `${firstSign} and ${secondSign} are ${percentage}% compatible`,
-      icon: <Heart className="h-5 w-5 text-pink-500" />,
     });
   };
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -7,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, UserPlus, LogIn, AlertCircle } from 'lucide-react';
-import { zodiacSigns } from '@/utils/zodiacData';
+import { UserPlus, LogIn, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Auth = () => {
@@ -48,7 +46,6 @@ const Auth = () => {
         toast({
           title: "Account created!",
           description: "Please check your email for the confirmation link.",
-          icon: <Sparkles className="h-5 w-5 text-zodiac-stardust-gold" />,
         });
         navigate('/');
       }
@@ -76,7 +73,6 @@ const Auth = () => {
         toast({
           title: "Welcome back!",
           description: "You've been successfully signed in.",
-          icon: <Sparkles className="h-5 w-5 text-zodiac-stardust-gold" />,
         });
         navigate('/');
       }

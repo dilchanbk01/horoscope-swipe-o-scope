@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ZodiacCard from '@/components/ZodiacCard';
 import SwipeControls from '@/components/SwipeControls';
 import { useSwipe } from '@/hooks/useSwipe';
 import { zodiacSigns } from '@/utils/zodiacData';
-import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -99,7 +98,6 @@ const Index = () => {
         description: user 
           ? "Visit your profile to see all your favorite signs."
           : "Sign in to save your favorites permanently.",
-        icon: <Sparkles className="h-5 w-5 text-zodiac-stardust-gold" />,
       });
     }
   };
