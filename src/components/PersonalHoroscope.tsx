@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
-import { getZodiacSignByBirthday, getRandomHoroscope, generateWeeklyHoroscope } from '../utils/zodiacData';
-import { validateDate, getMonthName } from '../utils/dateUtils';
-import { formatDate } from '../utils/dateUtils';
+import React, { useState, useEffect } from 'react';
+import { getZodiacSignByBirthday } from '../utils/zodiacData';
+import { validateDate, getMonthName, formatDate } from '../utils/dateUtils';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Sparkles } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { fetchDailyHoroscope } from '@/services/horoscopeApi';
+import { useToast } from '@/hooks/use-toast';
 
 const PersonalHoroscope: React.FC = () => {
   const [day, setDay] = useState<string>('');
@@ -15,6 +16,8 @@ const PersonalHoroscope: React.FC = () => {
   const [horoscope, setHoroscope] = useState<string | null>(null);
   const [weeklyHoroscope, setWeeklyHoroscope] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { toast } = useToast();
   
   const months = [
     { value: '1', label: 'January' },
@@ -30,6 +33,18 @@ const PersonalHoroscope: React.FC = () => {
     { value: '11', label: 'November' },
     { value: '12', label: 'December' },
   ];
+  
+  // Check localStorage on initial load
+  useEffect(() => {
+    const savedDay = localStorage.getItem('zodiac_birth_day');
+    const savedMonth = localStorage.getItem('zodiac_birth_month');
+    
+    if (savedDay && savedMonth) {
+      setDay(savedDay);
+      setMonth(savedMonth);
+      handleBirthDateSubmit(savedDay, savedMonth);
+    }
+  }, []);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,15 +62,52 @@ const PersonalHoroscope: React.FC = () => {
       return;
     }
     
+    // Save to localStorage
+    localStorage.setItem('zodiac_birth_day', day);
+    localStorage.setItem('zodiac_birth_month', month);
+    
+    handleBirthDateSubmit(day, month);
+  };
+  
+  const handleBirthDateSubmit = async (day: string, month: string) => {
+    setIsLoading(true);
     setError(null);
+    
+    const dayNum = parseInt(day, 10);
+    const monthNum = parseInt(month, 10);
+    
     const zodiacSign = getZodiacSignByBirthday(monthNum, dayNum);
     
     if (zodiacSign) {
       setSign(zodiacSign.name);
-      setHoroscope(getRandomHoroscope(zodiacSign.name));
-      setWeeklyHoroscope(generateWeeklyHoroscope(zodiacSign.name));
+      
+      try {
+        // Fetch personalized horoscope
+        const horoscopeText = await fetchDailyHoroscope(zodiacSign.name);
+        setHoroscope(horoscopeText);
+        
+        // Generate weekly horoscope (using 7 different daily horoscopes)
+        const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const weeklyPromises = weekdays.map(async (day) => {
+          const text = await fetchDailyHoroscope(zodiacSign.name);
+          return `${day}: ${text}`;
+        });
+        
+        const weeklyTexts = await Promise.all(weeklyPromises);
+        setWeeklyHoroscope(weeklyTexts);
+      } catch (error) {
+        console.error("Error fetching horoscope data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load your personalized horoscope",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       setError('Could not determine your zodiac sign');
+      setIsLoading(false);
     }
   };
   
@@ -109,8 +161,12 @@ const PersonalHoroscope: React.FC = () => {
           
           {error && <p className="text-red-400 text-sm">{error}</p>}
           
-          <Button type="submit" className="w-full bg-zodiac-mystic-purple hover:bg-zodiac-mystic-purple/80">
-            Reveal My Horoscope
+          <Button 
+            type="submit" 
+            className="w-full bg-zodiac-mystic-purple hover:bg-zodiac-mystic-purple/80"
+            disabled={isLoading}
+          >
+            {isLoading ? "Loading..." : "Reveal My Horoscope"}
           </Button>
         </form>
       ) : (
@@ -127,30 +183,37 @@ const PersonalHoroscope: React.FC = () => {
             </div>
           </div>
           
-          <Tabs defaultValue="daily" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="daily">Daily</TabsTrigger>
-              <TabsTrigger value="weekly">Weekly</TabsTrigger>
-            </TabsList>
-            <ScrollArea className="h-[400px] mt-4">
-              <TabsContent value="daily" className="mt-4 space-y-4">
-                <div className="bg-white/5 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-sm text-white/70 mb-2">
-                    <Calendar size={16} />
-                    <span>{formatDate(new Date())}</span>
+          {isLoading ? (
+            <div className="space-y-4">
+              <div className="animate-pulse h-4 bg-white/5 rounded-md w-1/4"></div>
+              <div className="animate-pulse h-32 bg-white/5 rounded-md"></div>
+            </div>
+          ) : (
+            <Tabs defaultValue="daily" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="daily">Daily</TabsTrigger>
+                <TabsTrigger value="weekly">Weekly</TabsTrigger>
+              </TabsList>
+              <ScrollArea className="h-[400px] mt-4">
+                <TabsContent value="daily" className="mt-4 space-y-4">
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-sm text-white/70 mb-2">
+                      <Calendar size={16} />
+                      <span>{formatDate(new Date())}</span>
+                    </div>
+                    <p className="text-white/90">{horoscope}</p>
                   </div>
-                  <p className="text-white/90">{horoscope}</p>
-                </div>
-              </TabsContent>
-              <TabsContent value="weekly" className="mt-4 space-y-4">
-                {weeklyHoroscope?.map((daily, index) => (
-                  <div key={index} className="bg-white/5 rounded-lg p-4 mb-3">
-                    <p className="text-white/90">{daily}</p>
-                  </div>
-                ))}
-              </TabsContent>
-            </ScrollArea>
-          </Tabs>
+                </TabsContent>
+                <TabsContent value="weekly" className="mt-4 space-y-4">
+                  {weeklyHoroscope?.map((daily, index) => (
+                    <div key={index} className="bg-white/5 rounded-lg p-4 mb-3">
+                      <p className="text-white/90">{daily}</p>
+                    </div>
+                  ))}
+                </TabsContent>
+              </ScrollArea>
+            </Tabs>
+          )}
           
           <Button 
             variant="outline" 
@@ -158,12 +221,12 @@ const PersonalHoroscope: React.FC = () => {
               setSign(null);
               setHoroscope(null);
               setWeeklyHoroscope(null);
-              setDay('');
-              setMonth('');
+              // We don't clear day/month to allow easy re-submission
             }}
             className="w-full border-white/20 text-white/80 hover:bg-white/10"
+            disabled={isLoading}
           >
-            Enter New Birthday
+            Change Birthday
           </Button>
         </div>
       )}

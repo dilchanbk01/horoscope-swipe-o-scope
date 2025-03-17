@@ -1,9 +1,12 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ZodiacSign } from '../utils/zodiacData';
 import { ArrowLeft, ArrowRight, Heart, X, Battery } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { fetchDailyHoroscope, getSocialEnergyLevel, saveFavoriteSign, isSignFavorited } from '@/services/horoscopeApi';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ZodiacCardProps {
   sign: ZodiacSign;
@@ -22,16 +25,81 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
   onSwipeRight,
   key
 }) => {
-  // Calculate social energy level (random value between 30-100 for demo purposes)
-  const socialEnergyLevel = Math.floor(Math.random() * 70) + 30;
+  const [dailyHoroscope, setDailyHoroscope] = useState<string>(sign.dailyHoroscope);
+  const [socialEnergyLevel, setSocialEnergyLevel] = useState<number>(50);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  const { user } = useAuth();
   
-  // Reset scroll position when sign changes
+  // Fetch personalized data when sign changes
   useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch daily horoscope
+        const horoscope = await fetchDailyHoroscope(sign.name);
+        setDailyHoroscope(horoscope);
+        
+        // Get social energy level
+        const energyLevel = await getSocialEnergyLevel(sign.name);
+        setSocialEnergyLevel(energyLevel);
+        
+        // Check if sign is favorited by user
+        if (user) {
+          const favorited = await isSignFavorited(sign.name);
+          setIsFavorite(favorited);
+        }
+      } catch (error) {
+        console.error("Error fetching zodiac data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load your personalized horoscope",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+    
+    // Reset scroll position when sign changes
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
-  }, [sign]);
+  }, [sign, user, toast]);
+  
+  // Toggle favorite status
+  const handleFavoriteToggle = async () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save your favorite zodiac signs",
+        variant: "default"
+      });
+      return;
+    }
+    
+    try {
+      const result = await saveFavoriteSign(sign.name);
+      setIsFavorite(result);
+      
+      toast({
+        title: result ? "Added to favorites" : "Removed from favorites",
+        description: result ? `${sign.name} added to your favorites` : `${sign.name} removed from your favorites`,
+        variant: "default"
+      });
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update your favorites",
+        variant: "destructive"
+      });
+    }
+  };
   
   return (
     <div
@@ -69,26 +137,42 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
         </div>
         
         {/* Card body - with ScrollArea for better scrolling */}
-        <ScrollArea className="flex-1" scrollable>
+        <ScrollArea className="flex-1">
           <div className="p-6" ref={scrollRef}>
             <div className="mb-6">
               <h3 className="text-lg text-white/90 font-medium mb-2">Today's Horoscope</h3>
-              <p className="text-white/80">{sign.dailyHoroscope}</p>
+              {isLoading ? (
+                <div className="animate-pulse h-20 bg-white/5 rounded-md"></div>
+              ) : (
+                <p className="text-white/80">{dailyHoroscope}</p>
+              )}
             </div>
             
             <div className="mb-6">
               <h3 className="text-lg text-white/90 font-medium mb-2">Social Energy</h3>
               <div className="flex items-center gap-3 mb-2">
                 <Battery size={20} className="text-zodiac-stardust-gold" />
-                <span className="text-sm text-white/80">{socialEnergyLevel}% Social Energy</span>
+                <span className="text-sm text-white/80">
+                  {isLoading ? "Loading..." : `${socialEnergyLevel}% Social Energy`}
+                </span>
               </div>
-              <Progress value={socialEnergyLevel} className="h-2 bg-white/10" />
+              
+              {isLoading ? (
+                <div className="animate-pulse h-2 bg-white/5 rounded-md"></div>
+              ) : (
+                <Progress value={socialEnergyLevel} className="h-2 bg-white/10" />
+              )}
+              
               <p className="mt-2 text-sm text-white/70">
-                {socialEnergyLevel > 70 
-                  ? "High social energy today! Great time for gatherings and connections." 
-                  : socialEnergyLevel > 40 
-                    ? "Moderate social energy. Balance social time with personal space."
-                    : "Lower social energy today. Consider quiet activities and self-care."}
+                {isLoading ? (
+                  <div className="animate-pulse h-10 bg-white/5 rounded-md mt-2"></div>
+                ) : (
+                  socialEnergyLevel > 70 
+                    ? "High social energy today! Great time for gatherings and connections." 
+                    : socialEnergyLevel > 40 
+                      ? "Moderate social energy. Balance social time with personal space."
+                      : "Lower social energy today. Consider quiet activities and self-care."
+                )}
               </p>
             </div>
             
@@ -116,11 +200,11 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
           </button>
           
           <button 
-            onClick={onSwipeRight}
-            className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            aria-label="Like"
+            onClick={handleFavoriteToggle}
+            className={`p-3 rounded-full ${isFavorite ? 'bg-pink-500/30 text-pink-300' : 'bg-white/10'} hover:bg-white/20 transition-colors`}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
-            <Heart size={20} />
+            <Heart size={20} className={isFavorite ? 'fill-pink-500 text-pink-500' : ''} />
           </button>
         </div>
       </div>
