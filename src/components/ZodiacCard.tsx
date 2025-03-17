@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ZodiacSign } from '../utils/zodiacData';
 import { ArrowLeft, ArrowRight, Heart, X, Battery } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -11,6 +11,7 @@ interface ZodiacCardProps {
   isActive?: boolean;
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
+  key?: string | number;
 }
 
 const ZodiacCard: React.FC<ZodiacCardProps> = ({
@@ -18,15 +19,25 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
   style,
   isActive = false,
   onSwipeLeft,
-  onSwipeRight
+  onSwipeRight,
+  key
 }) => {
   // Calculate social energy level (random value between 30-100 for demo purposes)
   const socialEnergyLevel = Math.floor(Math.random() * 70) + 30;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // Reset scroll position when sign changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [sign]);
   
   return (
     <div
-      className={`card-glass flex flex-col h-full ${isActive ? 'z-10' : 'z-0'}`}
+      className={`card-glass flex flex-col h-full ${isActive ? 'z-10 card-appear' : 'z-0'}`}
       style={style}
+      key={key}
     >
       {/* Swipe indicators */}
       <div className={`swipe-indicator left ${isActive ? 'swipe-active' : ''}`}>
@@ -58,8 +69,8 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
         </div>
         
         {/* Card body - with ScrollArea for better scrolling */}
-        <ScrollArea className="flex-1">
-          <div className="p-6">
+        <ScrollArea className="flex-1" scrollable>
+          <div className="p-6" ref={scrollRef}>
             <div className="mb-6">
               <h3 className="text-lg text-white/90 font-medium mb-2">Today's Horoscope</h3>
               <p className="text-white/80">{sign.dailyHoroscope}</p>

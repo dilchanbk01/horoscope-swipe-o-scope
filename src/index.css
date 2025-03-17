@@ -127,18 +127,77 @@
   -webkit-animation: swipe-right 0.5s forwards; /* For Safari */
 }
 
+/* Enhanced animations with fade and scale for clearer transitions */
+@keyframes swipe-left {
+  0% { 
+    opacity: 1;
+    transform: translateX(0) rotate(0);
+  }
+  100% { 
+    opacity: 0;
+    transform: translateX(-300px) rotate(-30deg) scale(0.8);
+  }
+}
+
+@keyframes swipe-right {
+  0% { 
+    opacity: 1;
+    transform: translateX(0) rotate(0);
+  }
+  100% { 
+    opacity: 0;
+    transform: translateX(300px) rotate(30deg) scale(0.8);
+  }
+}
+
 /* Add Safari-specific animations */
 @-webkit-keyframes swipe-left {
-  to {
+  0% { 
+    opacity: 1;
+    -webkit-transform: translateX(0) rotate(0);
+  }
+  100% { 
     opacity: 0;
-    -webkit-transform: translateX(-300px) rotate(-30deg);
+    -webkit-transform: translateX(-300px) rotate(-30deg) scale(0.8);
   }
 }
 
 @-webkit-keyframes swipe-right {
-  to {
+  0% { 
+    opacity: 1;
+    -webkit-transform: translateX(0) rotate(0);
+  }
+  100% { 
     opacity: 0;
-    -webkit-transform: translateX(300px) rotate(30deg);
+    -webkit-transform: translateX(300px) rotate(30deg) scale(0.8);
+  }
+}
+
+/* New animation for card appearance */
+.card-appear {
+  animation: card-appear 0.5s forwards;
+  -webkit-animation: card-appear 0.5s forwards;
+}
+
+@keyframes card-appear {
+  0% { 
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  100% { 
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@-webkit-keyframes card-appear {
+  0% { 
+    opacity: 0;
+    -webkit-transform: scale(0.9) translateY(10px);
+  }
+  100% { 
+    opacity: 1;
+    -webkit-transform: scale(1) translateY(0);
   }
 }
 

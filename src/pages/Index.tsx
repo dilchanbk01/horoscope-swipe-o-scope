@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import ZodiacCard from '@/components/ZodiacCard';
 import SwipeControls from '@/components/SwipeControls';
@@ -13,8 +12,8 @@ const Index = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [starElements, setStarElements] = useState<React.ReactNode[]>([]);
   const [user, setUser] = useState<any | null>(null);
+  const [cardKey, setCardKey] = useState(0);
 
-  // Check for authenticated user
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -34,7 +33,6 @@ const Index = () => {
     };
   }, []);
 
-  // Create stars for the background
   useEffect(() => {
     const generateStars = () => {
       const stars = [];
@@ -60,6 +58,10 @@ const Index = () => {
     generateStars();
   }, []);
 
+  const handleCardChange = () => {
+    setCardKey(prev => prev + 1);
+  };
+
   const handleSwipeLeft = (index: number) => {
     console.log('Swiped left (dislike):', zodiacSigns[index].name);
   };
@@ -79,11 +81,11 @@ const Index = () => {
     onSwipeLeft: handleSwipeLeft,
     onSwipeRight: handleSwipeRight,
     itemsLength: zodiacSigns.length,
+    onCardChange: handleCardChange
   });
 
   const currentSign = zodiacSigns[state.currentIndex];
 
-  // Style for the card during swipe
   const cardStyle = state.isSwiping
     ? {
         transform: `translateX(${state.offset}px) rotate(${state.offset * 0.05}deg)`,
@@ -105,14 +107,14 @@ const Index = () => {
         </p>
       </div>
       
-      <ScrollArea className="w-full max-w-[600px] h-[450px] md:h-[500px]">
+      <div className="w-full max-w-[600px] h-[450px] md:h-[500px]">
         <div 
           ref={containerRef}
           className="swipeable-card-stack w-full max-w-[600px] h-[450px] md:h-[500px]"
           {...handlers}
         >
           <div 
-            className={`swipeable-card card-glass ${state.isSwiping ? 'swiping' : ''}`} 
+            className={`swipeable-card ${state.isSwiping ? 'swiping' : ''}`} 
             style={cardStyle}
           >
             <ZodiacCard 
@@ -120,10 +122,11 @@ const Index = () => {
               isActive={true}
               onSwipeLeft={goToPrevious}
               onSwipeRight={goToNext}
+              key={`zodiac-card-${cardKey}-${currentSign.name}`}
             />
           </div>
         </div>
-      </ScrollArea>
+      </div>
       
       <SwipeControls
         onPrevious={goToPrevious}

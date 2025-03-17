@@ -7,6 +7,7 @@ interface SwipeState {
   offset: number;
   initialX: number;
   currentIndex: number;
+  hasAnimated: boolean;
 }
 
 interface UseSwipeProps {
@@ -15,6 +16,7 @@ interface UseSwipeProps {
   threshold?: number;
   itemsLength: number;
   initialIndex?: number;
+  onCardChange?: () => void;
 }
 
 export function useSwipe({
@@ -22,14 +24,16 @@ export function useSwipe({
   onSwipeRight,
   threshold = 100,
   itemsLength,
-  initialIndex = 0
+  initialIndex = 0,
+  onCardChange
 }: UseSwipeProps) {
   const [state, setState] = useState<SwipeState>({
     isSwiping: false,
     direction: null,
     offset: 0,
     initialX: 0,
-    currentIndex: initialIndex
+    currentIndex: initialIndex,
+    hasAnimated: false
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -109,8 +113,12 @@ export function useSwipe({
       currentIndex: (prev.currentIndex + 1) % itemsLength,
       isSwiping: false,
       offset: 0,
-      direction: null
+      direction: null,
+      hasAnimated: true
     }));
+    
+    // Call onCardChange to reset scroll position
+    onCardChange?.();
   };
 
   const goToPrevious = () => {
@@ -119,8 +127,12 @@ export function useSwipe({
       currentIndex: (prev.currentIndex - 1 + itemsLength) % itemsLength,
       isSwiping: false,
       offset: 0,
-      direction: null
+      direction: null,
+      hasAnimated: true
     }));
+    
+    // Call onCardChange to reset scroll position
+    onCardChange?.();
   };
 
   useEffect(() => {
@@ -160,6 +172,7 @@ export function useSwipe({
       direction: state.direction,
       offset: state.offset,
       currentIndex: state.currentIndex,
+      hasAnimated: state.hasAnimated,
     },
     goToNext,
     goToPrevious,
