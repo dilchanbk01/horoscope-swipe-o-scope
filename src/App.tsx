@@ -11,33 +11,36 @@ import CompatibilityPage from "./pages/Compatibility";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen">
-          <div className="stars-container">
-            {/* Stars will be generated using JavaScript */}
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <div className="min-h-screen">
+            <div className="stars-container">
+              {/* Stars will be generated using JavaScript */}
+            </div>
+            <NavBar />
+            <div className="pt-24 pb-16 px-4">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/personal" element={<PersonalPage />} />
+                <Route path="/compatibility" element={<CompatibilityPage />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
           </div>
-          <NavBar />
-          <div className="pt-24 pb-16 px-4">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/personal" element={<PersonalPage />} />
-              <Route path="/compatibility" element={<CompatibilityPage />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-        </div>
-      </BrowserRouter>
-    </TooltipProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
