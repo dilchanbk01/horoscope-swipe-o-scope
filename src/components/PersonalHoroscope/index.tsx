@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import BirthDateForm from './BirthDateForm';
 import HoroscopeContent from './HoroscopeContent';
+import { Button } from '@/components/ui/button';
 import { Sparkles } from 'lucide-react';
 
 const PersonalHoroscope: React.FC = () => {
@@ -59,7 +60,6 @@ const PersonalHoroscope: React.FC = () => {
         }
         
         setHoroscope(aztroData.description);
-        
         setLuckyColor(aztroData.color);
         setLuckyTime(aztroData.lucky_time);
         setMood(aztroData.mood);
@@ -150,6 +150,12 @@ const PersonalHoroscope: React.FC = () => {
     }
   };
   
+  const resetHoroscope = () => {
+    setSign(null);
+    setHoroscope(null);
+    setWeeklyHoroscope(null);
+  };
+  
   return (
     <div className="card-glass w-full max-w-[600px] p-6 animate-fade-in">
       <h2 className="text-2xl font-display font-semibold mb-4 flex items-center gap-2">
@@ -160,21 +166,31 @@ const PersonalHoroscope: React.FC = () => {
       {!sign ? (
         <BirthDateForm onSubmit={handleBirthDateSubmit} isLoading={isLoading} />
       ) : (
-        <HoroscopeContent
-          sign={sign}
-          month={month}
-          day={day}
-          horoscope={horoscope}
-          weeklyHoroscope={weeklyHoroscope}
-          luckyNumbers={luckyNumbers}
-          luckyColor={luckyColor}
-          luckyTime={luckyTime}
-          compatibleSigns={compatibleSigns}
-          mood={mood}
-          moonPhase={moonPhase}
-          energyLevels={energyLevels}
-          isLoading={isLoading}
-        />
+        <div className="space-y-4">
+          <HoroscopeContent
+            sign={sign}
+            month={month}
+            day={day}
+            horoscope={horoscope}
+            weeklyHoroscope={weeklyHoroscope}
+            luckyNumbers={luckyNumbers}
+            luckyColor={luckyColor}
+            luckyTime={luckyTime}
+            compatibleSigns={compatibleSigns}
+            mood={mood}
+            moonPhase={moonPhase}
+            energyLevels={energyLevels}
+            isLoading={isLoading}
+          />
+          
+          <Button 
+            variant="outline" 
+            onClick={resetHoroscope}
+            className="w-full mt-4"
+          >
+            Try Another Birth Date
+          </Button>
+        </div>
       )}
     </div>
   );
