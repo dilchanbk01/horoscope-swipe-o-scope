@@ -1,14 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { getZodiacSignByBirthday } from '../utils/zodiacData';
 import { validateDate, getMonthName, formatDate } from '../utils/dateUtils';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Sparkles, Star, Moon, Sun, Activity } from 'lucide-react';
+import { Calendar, Sparkles, Star, Moon, Sun, Activity, Clock, PlusCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { fetchDailyHoroscope } from '@/services/horoscopeApi';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/integrations/supabase/client';
 
 const PersonalHoroscope: React.FC = () => {
   const [day, setDay] = useState<string>('');
@@ -18,7 +18,9 @@ const PersonalHoroscope: React.FC = () => {
   const [weeklyHoroscope, setWeeklyHoroscope] = useState<string[] | null>(null);
   const [luckyNumbers, setLuckyNumbers] = useState<number[]>([]);
   const [luckyColor, setLuckyColor] = useState<string>('');
+  const [luckyTime, setLuckyTime] = useState<string>('');
   const [compatibleSigns, setCompatibleSigns] = useState<string[]>([]);
+  const [mood, setMood] = useState<string>('');
   const [moonPhase, setMoonPhase] = useState<string>('');
   const [energyLevels, setEnergyLevels] = useState<{
     mental: number;
@@ -44,7 +46,6 @@ const PersonalHoroscope: React.FC = () => {
     { value: '12', label: 'December' },
   ];
   
-  // Check localStorage on initial load
   useEffect(() => {
     const savedDay = localStorage.getItem('zodiac_birth_day');
     const savedMonth = localStorage.getItem('zodiac_birth_month');
@@ -72,76 +73,12 @@ const PersonalHoroscope: React.FC = () => {
       return;
     }
     
-    // Save to localStorage
     localStorage.setItem('zodiac_birth_day', day);
     localStorage.setItem('zodiac_birth_month', month);
     
     handleBirthDateSubmit(day, month);
   };
 
-  // Generate deterministic "random" values based on date and sign
-  const generateDeterministicValues = (signName: string) => {
-    const today = new Date();
-    const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-    const seed = signName + dateString;
-    
-    // Function to generate a seeded random number
-    const seededRandom = (max: number, offset = 0) => {
-      let hash = 0;
-      for (let i = 0; i < seed.length; i++) {
-        hash = ((hash << 5) - hash) + seed.charCodeAt(i) + offset;
-        hash |= 0;
-      }
-      return Math.abs(hash % max);
-    };
-    
-    // Generate lucky numbers (1-99)
-    const numbers: number[] = [];
-    for (let i = 0; i < 3; i++) {
-      numbers.push(seededRandom(99, i) + 1);
-    }
-    
-    // Generate a lucky color
-    const colors = [
-      'Emerald Green', 'Royal Blue', 'Ruby Red', 'Amethyst Purple', 
-      'Topaz Yellow', 'Turquoise', 'Rose Gold', 'Silver', 'Gold', 
-      'Sapphire Blue', 'Jade Green', 'Amber Orange'
-    ];
-    const color = colors[seededRandom(colors.length)];
-    
-    // Generate compatible signs (3 of them)
-    const allSigns = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
-    ];
-    const filteredSigns = allSigns.filter(s => s !== signName);
-    const compatibles: string[] = [];
-    for (let i = 0; i < 3; i++) {
-      const index = seededRandom(filteredSigns.length, i);
-      compatibles.push(filteredSigns[index]);
-    }
-    
-    // Generate moon phase
-    const moonPhases = [
-      'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
-      'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
-    ];
-    const phase = moonPhases[seededRandom(moonPhases.length)];
-    
-    // Generate energy levels
-    const mental = seededRandom(40, 1) + 40;  // 40-80 range
-    const physical = seededRandom(60, 2) + 30; // 30-90 range
-    const emotional = seededRandom(50, 3) + 30; // 30-80 range
-    
-    return {
-      luckyNumbers: numbers,
-      luckyColor: color,
-      compatibleSigns: compatibles,
-      moonPhase: phase,
-      energyLevels: { mental, physical, emotional }
-    };
-  };
-  
   const handleBirthDateSubmit = async (day: string, month: string) => {
     setIsLoading(true);
     setError(null);
@@ -155,45 +92,81 @@ const PersonalHoroscope: React.FC = () => {
       setSign(zodiacSign.name);
       
       try {
-        // Fetch personalized horoscope - now faster with our updated API
-        const horoscopeText = await fetchDailyHoroscope(zodiacSign.name);
-        setHoroscope(horoscopeText);
+        const { data: aztroData, error: aztroError } = await supabase.functions.invoke("aztro-horoscope", {
+          body: { sign: zodiacSign.name.toLowerCase(), day: "today" }
+        });
+
+        if (aztroError) {
+          throw new Error(aztroError.message);
+        }
         
-        // Generate deterministic personalized data
-        const {
-          luckyNumbers,
-          luckyColor,
-          compatibleSigns,
-          moonPhase,
-          energyLevels
-        } = generateDeterministicValues(zodiacSign.name);
+        setHoroscope(aztroData.description);
         
-        setLuckyNumbers(luckyNumbers);
-        setLuckyColor(luckyColor);
-        setCompatibleSigns(compatibleSigns);
-        setMoonPhase(moonPhase);
-        setEnergyLevels(energyLevels);
+        setLuckyColor(aztroData.color);
+        setLuckyTime(aztroData.lucky_time);
+        setMood(aztroData.mood);
         
-        // Generate weekly horoscope
+        const luckyNumbersFromApi = aztroData.lucky_number.split(',').map((num: string) => parseInt(num.trim(), 10));
+        setLuckyNumbers(luckyNumbersFromApi.filter((num: number) => !isNaN(num)));
+        
+        setCompatibleSigns([aztroData.compatibility]);
+        
         const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         const weeklyTexts = weekdays.map(day => {
-          // Create slightly different texts for each day using deterministic method
           const seed = zodiacSign.name + day;
           let hash = 0;
           for (let i = 0; i < seed.length; i++) {
             hash = ((hash << 5) - hash) + seed.charCodeAt(i);
             hash |= 0;
           }
-          const dayIndex = Math.abs(hash % 3); // Use this to pick one of three variations
           
-          return `${day}: ${horoscopeText.split('.')[dayIndex % horoscopeText.split('.').length]}. ${
+          const sentences = aztroData.description.split('.');
+          const sentenceIndex = Math.abs(hash % sentences.length);
+          
+          return `${day}: ${sentences[sentenceIndex] || sentences[0]}. ${
             hash % 2 === 0 
-              ? "Your intuition is especially strong today." 
-              : "Focus on self-care and balance."
+              ? `Your lucky color is ${aztroData.color}.` 
+              : `Your lucky time is ${aztroData.lucky_time}.`
           }`;
         });
         
         setWeeklyHoroscope(weeklyTexts);
+        
+        const moonPhases = [
+          'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
+          'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
+        ];
+        const today = new Date();
+        const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+        const phaseIndex = Math.floor((dayOfYear % 29.5) / 3.7);
+        setMoonPhase(moonPhases[phaseIndex]);
+        
+        const moodEnergyMap: Record<string, number> = {
+          'happy': 85, 'cheerful': 90, 'energetic': 95,
+          'calm': 60, 'content': 70, 'relaxed': 65,
+          'tired': 40, 'busy': 75, 'mixed': 55,
+          'sad': 35, 'anxious': 45, 'stressed': 50
+        };
+        
+        const normalizedMood = aztroData.mood.toLowerCase();
+        let moodEnergy = 65;
+        
+        for (const [mood, energy] of Object.entries(moodEnergyMap)) {
+          if (normalizedMood.includes(mood)) {
+            moodEnergy = energy;
+            break;
+          }
+        }
+        
+        const dateHash = today.getDate() + today.getMonth() * 30;
+        const physicalOffset = (dateHash % 20) - 10;
+        const mentalOffset = ((dateHash * 7) % 20) - 10;
+        
+        setEnergyLevels({
+          emotional: moodEnergy,
+          physical: Math.min(Math.max(moodEnergy + physicalOffset, 30), 95),
+          mental: Math.min(Math.max(moodEnergy + mentalOffset, 30), 95)
+        });
         
         toast({
           title: "Horoscope Ready",
@@ -307,6 +280,15 @@ const PersonalHoroscope: React.FC = () => {
                       <span>{formatDate(new Date())}</span>
                     </div>
                     <p className="text-white/90">{horoscope}</p>
+                    
+                    {mood && (
+                      <div className="mt-3 flex items-center gap-2 text-sm">
+                        <span className="text-white/70">Today's Mood:</span>
+                        <span className="bg-zodiac-mystic-purple/30 text-white px-3 py-1 rounded-full text-sm">
+                          {mood}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="bg-white/5 rounded-lg p-4">
@@ -318,7 +300,7 @@ const PersonalHoroscope: React.FC = () => {
                     <div className="space-y-4">
                       <div>
                         <p className="text-sm text-white/70 mb-1">Lucky Numbers</p>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           {luckyNumbers.map((num, i) => (
                             <span key={i} className="bg-zodiac-mystic-purple/30 text-white px-3 py-1 rounded-full text-sm">
                               {num}
@@ -332,6 +314,16 @@ const PersonalHoroscope: React.FC = () => {
                         <span className="bg-zodiac-mystic-purple/30 text-white px-3 py-1 rounded-full text-sm">
                           {luckyColor}
                         </span>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm text-white/70 mb-1">Lucky Time</p>
+                        <div className="flex items-center gap-2">
+                          <Clock size={16} className="text-white/80" />
+                          <span className="bg-zodiac-mystic-purple/30 text-white px-3 py-1 rounded-full text-sm">
+                            {luckyTime}
+                          </span>
+                        </div>
                       </div>
                       
                       <div>
@@ -451,17 +443,5 @@ const PersonalHoroscope: React.FC = () => {
               setSign(null);
               setHoroscope(null);
               setWeeklyHoroscope(null);
-              // We don't clear day/month to allow easy re-submission
-            }}
-            className="w-full border-white/20 text-white/80 hover:bg-white/10"
-            disabled={isLoading}
-          >
-            Change Birthday
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-};
+           
 
-export default PersonalHoroscope;
