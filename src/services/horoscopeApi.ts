@@ -21,6 +21,9 @@ const isCacheValid = (timestamp: number): boolean => {
   return Date.now() - timestamp < CACHE_EXPIRATION;
 };
 
+// AstroAPI configuration
+const ASTRO_API_URL = 'https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily';
+
 // API to fetch daily horoscope for a sign
 export const fetchDailyHoroscope = async (sign: string): Promise<string> => {
   // Check cache first
@@ -29,9 +32,16 @@ export const fetchDailyHoroscope = async (sign: string): Promise<string> => {
   }
 
   try {
-    // In a real app, we would call an external API here
-    // For now, we'll use our existing data but make it persistent per user session
-    const horoscopeText = await fetchFromHoroscopeService(sign);
+    // Convert sign to lowercase as required by the API
+    const signLower = sign.toLowerCase();
+    const response = await fetch(`${ASTRO_API_URL}?sign=${signLower}`);
+    
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const horoscopeText = data.data.horoscope_data;
     
     // Cache the result
     cache.dailyHoroscopes[sign] = {
@@ -41,32 +51,51 @@ export const fetchDailyHoroscope = async (sign: string): Promise<string> => {
     
     return horoscopeText;
   } catch (error) {
-    console.error("Error fetching horoscope:", error);
-    throw error;
+    console.error("Error fetching horoscope from API:", error);
+    // Fallback to our mock data if API fails
+    const fallbackText = await fetchFromMockHoroscopeService(sign);
+    return fallbackText;
   }
 };
 
-// Get social energy level for a sign (persisted for the day)
+// Get social energy level for a sign (using a deterministic but seemingly random approach)
 export const getSocialEnergyLevel = async (sign: string): Promise<number> => {
   // Check cache first
   if (cache.socialEnergy[sign] && isCacheValid(cache.socialEnergy[sign].timestamp)) {
     return cache.socialEnergy[sign].level;
   }
   
-  // Generate a consistent energy level for the day
-  const level = Math.floor(Math.random() * 70) + 30;
-  
-  // Cache the result
-  cache.socialEnergy[sign] = {
-    level,
-    timestamp: Date.now()
-  };
-  
-  return level;
+  try {
+    // We'll use the horoscope text to generate a pseudo-random but consistent energy level
+    const horoscope = await fetchDailyHoroscope(sign);
+    
+    // Use the text to create a deterministic "random" number
+    // The same horoscope text will always generate the same energy level
+    let hash = 0;
+    for (let i = 0; i < horoscope.length; i++) {
+      hash = ((hash << 5) - hash) + horoscope.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
+    }
+    
+    // Ensure the value is between 30 and 100
+    const level = Math.abs(hash % 70) + 30;
+    
+    // Cache the result
+    cache.socialEnergy[sign] = {
+      level,
+      timestamp: Date.now()
+    };
+    
+    return level;
+  } catch (error) {
+    console.error("Error calculating social energy:", error);
+    // Fallback value
+    return 50;
+  }
 };
 
-// Mock API call - in a real app, this would be an actual API request
-async function fetchFromHoroscopeService(sign: string): Promise<string> {
+// Mock API call - used as fallback if the real API fails
+async function fetchFromMockHoroscopeService(sign: string): Promise<string> {
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 300));
   
