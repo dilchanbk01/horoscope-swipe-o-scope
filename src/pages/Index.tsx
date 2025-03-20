@@ -1,15 +1,14 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import ZodiacCard from '@/components/ZodiacCard';
 import SwipeControls from '@/components/SwipeControls';
 import { useSwipe } from '@/hooks/useSwipe';
 import { zodiacSigns } from '@/utils/zodiacData';
-import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
-  const [showInfo, setShowInfo] = useState(false);
   const [starElements, setStarElements] = useState<React.ReactNode[]>([]);
   const [user, setUser] = useState<any | null>(null);
   const [cardKey, setCardKey] = useState(0);
@@ -134,49 +133,6 @@ const Index = () => {
         currentIndex={state.currentIndex}
         total={zodiacSigns.length}
       />
-      
-      <div className="mt-8 flex flex-col items-center">
-        <button
-          onClick={() => setShowInfo(!showInfo)}
-          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-        >
-          {showInfo ? (
-            <>
-              <span>Hide instructions</span>
-              <ChevronUp size={20} />
-            </>
-          ) : (
-            <>
-              <span>How to use</span>
-              <ChevronDown size={20} />
-            </>
-          )}
-        </button>
-        
-        {showInfo && (
-          <div className="mt-4 max-w-md glass p-4 rounded-lg animate-fade-in">
-            <h3 className="font-medium mb-2">How to use this app:</h3>
-            <ul className="space-y-2 text-sm text-white/80">
-              <li className="flex items-center gap-2">
-                <ArrowLeft size={16} /> Swipe left to skip to the previous sign
-              </li>
-              <li className="flex items-center gap-2">
-                <ArrowRight size={16} /> Swipe right to explore and go to the next sign
-              </li>
-              <li>
-                Click on the navigation links to explore your personal horoscope and check compatibility
-              </li>
-              {!user && (
-                <li className="mt-4 pt-2 border-t border-white/10">
-                  <Link to="/auth" className="text-zodiac-stardust-gold hover:underline">
-                    Sign in or create an account
-                  </Link> to access additional features
-                </li>
-              )}
-            </ul>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

@@ -12,7 +12,7 @@ const PersonalPage = () => {
             Your Personal Horoscope
           </h1>
           <p className="text-lg text-white/70 max-w-md mx-auto">
-            Discover what the stars have in store for you
+            Discover what the stars have in store specifically for you
           </p>
         </div>
         
