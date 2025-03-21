@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
+import MobileQuickNav from "./components/MobileQuickNav";
 import Index from "./pages/Index";
 import PersonalPage from "./pages/Personal";
 import CompatibilityPage from "./pages/Compatibility";
@@ -37,6 +38,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
+            <MobileQuickNav />
           </div>
         </BrowserRouter>
       </TooltipProvider>

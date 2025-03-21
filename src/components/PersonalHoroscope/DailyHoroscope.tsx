@@ -33,7 +33,8 @@ const DailyHoroscope: React.FC<DailyHoroscopeProps> = ({ horoscope, mood }) => {
   }
   
   // Split the horoscope into multiple paragraphs to improve readability
-  const paragraphs = horoscope.match(/(.{1,150})(?:\s|$)/g) || [];
+  // Make paragraphs smaller for better reading experience
+  const paragraphs = horoscope.match(/(.{1,100})(?:\s|$)/g) || [];
   
   return (
     <div className="bg-white/5 rounded-lg p-5">

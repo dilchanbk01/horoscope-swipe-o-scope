@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import ZodiacCard from '@/components/ZodiacCard';
@@ -57,13 +56,10 @@ const Index = () => {
 
     generateStars();
     
-    // Prefetch horoscope data for all signs
     const prefetchData = async () => {
       setIsLoading(true);
       try {
-        // Get the sign names
         const signNames = zodiacSigns.map(sign => sign.name);
-        // Prefetch data for all signs
         await prefetchHoroscopeData(signNames);
       } catch (err) {
         console.error("Error prefetching horoscope data:", err);
@@ -115,15 +111,6 @@ const Index = () => {
         {starElements}
       </div>
       
-      <div className="text-center mb-8 animate-fade-in">
-        <h1 className="text-4xl md:text-5xl font-display font-bold mb-3">
-          Discover Your Stars
-        </h1>
-        <p className="text-lg text-white/70 max-w-md mx-auto">
-          Swipe through zodiac signs to find your cosmic match
-        </p>
-      </div>
-      
       <div className="w-full max-w-[600px] h-[450px] md:h-[500px]">
         <div 
           ref={containerRef}
@@ -146,8 +133,6 @@ const Index = () => {
         </div>
       </div>
       
-      {/* SwipeControls have been removed since they're redundant */}
-      {/* Only show dots to indicate position */}
       <div className="flex items-center gap-1 mt-6">
         {Array.from({ length: zodiacSigns.length }).map((_, index) => (
           <div

@@ -11,8 +11,8 @@ export const cache: Cache = {
   socialEnergy: {},
 };
 
-// Cache expiration in milliseconds (4 hours)
-export const CACHE_EXPIRATION = 4 * 60 * 60 * 1000;
+// Cache expiration in milliseconds (2 hours for more frequent updates)
+export const CACHE_EXPIRATION = 2 * 60 * 60 * 1000;
 
 // Check if cache is still valid
 export const isCacheValid = (timestamp: number): boolean => {
@@ -26,10 +26,26 @@ try {
     const parsedCache = JSON.parse(savedCache);
     // Validate the structure before using
     if (parsedCache.dailyHoroscopes && parsedCache.socialEnergy) {
+      // Check if the cache is still valid before using it
+      const now = Date.now();
+      
+      // Filter out expired entries
+      Object.keys(parsedCache.dailyHoroscopes).forEach(key => {
+        if (!isCacheValid(parsedCache.dailyHoroscopes[key].timestamp)) {
+          delete parsedCache.dailyHoroscopes[key];
+        }
+      });
+      
+      Object.keys(parsedCache.socialEnergy).forEach(key => {
+        if (!isCacheValid(parsedCache.socialEnergy[key].timestamp)) {
+          delete parsedCache.socialEnergy[key];
+        }
+      });
+      
       // Merge with our empty cache
       cache.dailyHoroscopes = { ...parsedCache.dailyHoroscopes };
       cache.socialEnergy = { ...parsedCache.socialEnergy };
-      console.log('Loaded cache from localStorage');
+      console.log('Loaded valid cache from localStorage');
     }
   }
 } catch (error) {
@@ -41,15 +57,37 @@ try {
 export const saveCache = () => {
   try {
     localStorage.setItem('zodiac_data_cache', JSON.stringify(cache));
+    console.log('Cache saved to localStorage');
   } catch (error) {
     console.error('Error saving cache to localStorage:', error);
   }
 };
 
-// Set up periodic cache saving
-setInterval(saveCache, 60000); // Save every minute
+// Save cache more frequently
+setInterval(saveCache, 30000); // Save every 30 seconds
 
 // Save cache before the page unloads
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', saveCache);
 }
+
+// Force reload cache after certain time to ensure fresh data
+export const invalidateCacheIfOld = () => {
+  const lastRefresh = localStorage.getItem('zodiac_cache_last_refresh');
+  const now = Date.now();
+  
+  // If no refresh timestamp or it's been more than 4 hours, clear cache
+  if (!lastRefresh || (now - parseInt(lastRefresh, 10)) > 4 * 60 * 60 * 1000) {
+    console.log('Invalidating old cache data');
+    cache.dailyHoroscopes = {};
+    cache.socialEnergy = {};
+    localStorage.setItem('zodiac_cache_last_refresh', now.toString());
+    saveCache();
+    return true;
+  }
+  
+  return false;
+};
+
+// Call invalidation check on initialization
+invalidateCacheIfOld();

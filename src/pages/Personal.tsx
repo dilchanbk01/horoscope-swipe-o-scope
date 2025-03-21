@@ -11,9 +11,6 @@ const PersonalPage = () => {
           <h1 className="text-4xl md:text-5xl font-display font-bold mb-3">
             Your Personal Horoscope
           </h1>
-          <p className="text-lg text-white/70 max-w-md mx-auto">
-            Discover what the stars have in store specifically for you
-          </p>
         </div>
         
         <PersonalHoroscope />
