@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { ZodiacSign } from '../utils/zodiacData';
-import { ArrowLeft, ArrowRight, Heart, X, Battery } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Battery } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { fetchDailyHoroscope, getSocialEnergyLevel, saveFavoriteSign, isSignFavorited } from '@/services/horoscopeApi';
@@ -71,36 +71,6 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
     }
   }, [sign, user, toast]);
   
-  // Toggle favorite status
-  const handleFavoriteToggle = async () => {
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to save your favorite zodiac signs",
-        variant: "default"
-      });
-      return;
-    }
-    
-    try {
-      const result = await saveFavoriteSign(sign.name);
-      setIsFavorite(result);
-      
-      toast({
-        title: result ? "Added to favorites" : "Removed from favorites",
-        description: result ? `${sign.name} added to your favorites` : `${sign.name} removed from your favorites`,
-        variant: "default"
-      });
-    } catch (error) {
-      console.error("Error toggling favorite:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update your favorites",
-        variant: "destructive"
-      });
-    }
-  };
-  
   return (
     <div
       className={`card-glass flex flex-col h-full ${isActive ? 'z-10 card-appear' : 'z-0'}`}
@@ -109,10 +79,10 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
     >
       {/* Swipe indicators */}
       <div className={`swipe-indicator left ${isActive ? 'swipe-active' : ''}`}>
-        <X size={36} className="text-destructive" />
+        <ArrowLeft size={36} className="text-blue-400" />
       </div>
       <div className={`swipe-indicator right ${isActive ? 'swipe-active' : ''}`}>
-        <Heart size={36} className="text-pink-500" />
+        <ArrowRight size={36} className="text-blue-400" />
       </div>
 
       {/* Card content */}
@@ -194,17 +164,17 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
           <button 
             onClick={onSwipeLeft}
             className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            aria-label="Dislike"
+            aria-label="Previous sign"
           >
-            <X size={20} />
+            <ArrowLeft size={20} />
           </button>
           
           <button 
-            onClick={handleFavoriteToggle}
-            className={`p-3 rounded-full ${isFavorite ? 'bg-pink-500/30 text-pink-300' : 'bg-white/10'} hover:bg-white/20 transition-colors`}
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            onClick={onSwipeRight}
+            className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            aria-label="Next sign"
           >
-            <Heart size={20} className={isFavorite ? 'fill-pink-500 text-pink-500' : ''} />
+            <ArrowRight size={20} />
           </button>
         </div>
       </div>
