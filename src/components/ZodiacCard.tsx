@@ -14,7 +14,7 @@ interface ZodiacCardProps {
   isActive?: boolean;
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
-  key?: string | number;
+  isLoading?: boolean;
 }
 
 const ZodiacCard: React.FC<ZodiacCardProps> = ({
@@ -23,33 +23,59 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
   isActive = false,
   onSwipeLeft,
   onSwipeRight,
-  key
+  isLoading: externalLoading = false
 }) => {
   const [dailyHoroscope, setDailyHoroscope] = useState<string>(sign.dailyHoroscope);
   const [socialEnergyLevel, setSocialEnergyLevel] = useState<number>(50);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [loadState, setLoadState] = useState<{horoscope: boolean, energy: boolean}>({
+    horoscope: false,
+    energy: false
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const isInitialMount = useRef(true);
   
   // Fetch personalized data when sign changes
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      setLoadState({horoscope: false, energy: false});
+      
       try {
         // Fetch daily horoscope
-        const horoscope = await fetchDailyHoroscope(sign.name);
-        setDailyHoroscope(horoscope);
+        fetchDailyHoroscope(sign.name)
+          .then(horoscope => {
+            setDailyHoroscope(horoscope);
+            setLoadState(prev => ({...prev, horoscope: true}));
+          })
+          .catch(error => {
+            console.error("Error fetching horoscope:", error);
+            setLoadState(prev => ({...prev, horoscope: true}));
+          });
         
-        // Get social energy level
-        const energyLevel = await getSocialEnergyLevel(sign.name);
-        setSocialEnergyLevel(energyLevel);
+        // Get social energy level in parallel
+        getSocialEnergyLevel(sign.name)
+          .then(energyLevel => {
+            setSocialEnergyLevel(energyLevel);
+            setLoadState(prev => ({...prev, energy: true}));
+          })
+          .catch(error => {
+            console.error("Error fetching energy level:", error);
+            setLoadState(prev => ({...prev, energy: true}));
+          });
         
         // Check if sign is favorited by user
         if (user) {
-          const favorited = await isSignFavorited(sign.name);
-          setIsFavorite(favorited);
+          isSignFavorited(sign.name)
+            .then(favorited => {
+              setIsFavorite(favorited);
+            })
+            .catch(error => {
+              console.error("Error checking if sign is favorited:", error);
+            });
         }
       } catch (error) {
         console.error("Error fetching zodiac data:", error);
@@ -58,24 +84,47 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
           description: "Failed to load your personalized horoscope",
           variant: "destructive"
         });
-      } finally {
-        setIsLoading(false);
       }
     };
     
-    fetchData();
+    if (!externalLoading) {
+      fetchData();
+    } else {
+      // If external loading is in progress, we should still check for favorites
+      if (user) {
+        isSignFavorited(sign.name)
+          .then(favorited => {
+            setIsFavorite(favorited);
+          })
+          .catch(error => {
+            console.error("Error checking if sign is favorited:", error);
+          });
+      }
+    }
     
     // Reset scroll position when sign changes
-    if (scrollRef.current) {
+    if (scrollRef.current && !isInitialMount.current) {
       scrollRef.current.scrollTop = 0;
     }
-  }, [sign, user, toast]);
+    
+    isInitialMount.current = false;
+    
+    return () => {
+      // Clean up any pending operations if needed
+    };
+  }, [sign, user, toast, externalLoading]);
+  
+  // Update loading state when loadState changes
+  useEffect(() => {
+    if (loadState.horoscope && loadState.energy) {
+      setIsLoading(false);
+    }
+  }, [loadState]);
   
   return (
     <div
       className={`card-glass flex flex-col h-full ${isActive ? 'z-10 card-appear' : 'z-0'}`}
       style={style}
-      key={key}
     >
       {/* Swipe indicators */}
       <div className={`swipe-indicator left ${isActive ? 'swipe-active' : ''}`}>
@@ -111,8 +160,13 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
           <div className="p-6" ref={scrollRef}>
             <div className="mb-6">
               <h3 className="text-lg text-white/90 font-medium mb-2">Today's Horoscope</h3>
-              {isLoading ? (
-                <div className="animate-pulse h-20 bg-white/5 rounded-md"></div>
+              {isLoading || externalLoading ? (
+                <div className="space-y-2">
+                  <div className="animate-pulse h-4 bg-white/5 rounded-md w-full"></div>
+                  <div className="animate-pulse h-4 bg-white/5 rounded-md w-5/6"></div>
+                  <div className="animate-pulse h-4 bg-white/5 rounded-md w-11/12"></div>
+                  <div className="animate-pulse h-4 bg-white/5 rounded-md w-4/5"></div>
+                </div>
               ) : (
                 <p className="text-white/80">{dailyHoroscope}</p>
               )}
@@ -123,18 +177,18 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
               <div className="flex items-center gap-3 mb-2">
                 <Battery size={20} className="text-zodiac-stardust-gold" />
                 <span className="text-sm text-white/80">
-                  {isLoading ? "Loading..." : `${socialEnergyLevel}% Social Energy`}
+                  {isLoading || externalLoading ? "Loading..." : `${socialEnergyLevel}% Social Energy`}
                 </span>
               </div>
               
-              {isLoading ? (
+              {isLoading || externalLoading ? (
                 <div className="animate-pulse h-2 bg-white/5 rounded-md"></div>
               ) : (
                 <Progress value={socialEnergyLevel} className="h-2 bg-white/10" />
               )}
               
               <p className="mt-2 text-sm text-white/70">
-                {isLoading ? (
+                {isLoading || externalLoading ? (
                   <div className="animate-pulse h-10 bg-white/5 rounded-md mt-2"></div>
                 ) : (
                   socialEnergyLevel > 70 

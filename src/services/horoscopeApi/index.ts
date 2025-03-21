@@ -10,6 +10,7 @@ export const fetchDailyHoroscope = async (sign: string): Promise<string> => {
   
   // Check cache first
   if (cache.dailyHoroscopes[normalizedSign] && isCacheValid(cache.dailyHoroscopes[normalizedSign].timestamp)) {
+    console.log(`Using cached horoscope for ${sign}`);
     return cache.dailyHoroscopes[normalizedSign].text;
   }
 
@@ -28,7 +29,15 @@ export const fetchDailyHoroscope = async (sign: string): Promise<string> => {
     const horoscopeText = data.description || "The cosmic energies are mysterious today.";
     
     // Add some additional context based on other Aztro data
-    const enhancedHoroscope = `${horoscopeText} Your lucky time today is ${data.lucky_time}, and your lucky color is ${data.color}.`;
+    const enhancedHoroscope = `${horoscopeText} Your lucky time today is ${data.lucky_time}, and your lucky color is ${data.color}. The cosmic alignment suggests that ${
+      Math.random() > 0.5 
+        ? `focusing on ${data.color}-colored objects might bring you unexpected insights.` 
+        : `being mindful of your energy during ${data.lucky_time} could lead to significant breakthroughs.`
+    } ${
+      Math.random() > 0.5
+        ? `Your ruling planet is highlighting aspects of your relationships today.`
+        : `Stars indicate this is a good time for self-reflection and personal growth.`
+    } Consider the number ${data.lucky_number.split(',')[0]} as significant in your decision-making process today.`;
     
     // Cache the result
     cache.dailyHoroscopes[normalizedSign] = {
@@ -42,6 +51,28 @@ export const fetchDailyHoroscope = async (sign: string): Promise<string> => {
     console.error("Error fetching horoscope:", error);
     return "The cosmic forces are currently unpredictable. Take time to reflect and trust your intuition today.";
   }
+};
+
+// Prefetch horoscope data for all signs
+export const prefetchHoroscopeData = async (signs: string[]): Promise<void> => {
+  // Create a queue of promises
+  const fetchPromises = signs.map(sign => {
+    // Return a promise that resolves immediately if we have cached data
+    const normalizedSign = sign.toLowerCase();
+    if (cache.dailyHoroscopes[normalizedSign] && isCacheValid(cache.dailyHoroscopes[normalizedSign].timestamp)) {
+      return Promise.resolve();
+    }
+    
+    // Otherwise, fetch the data but don't wait for it
+    return fetchDailyHoroscope(sign).catch(err => {
+      console.error(`Error prefetching data for ${sign}:`, err);
+      // Still resolve the promise so Promise.all doesn't fail
+      return Promise.resolve();
+    });
+  });
+  
+  // Start all fetches in parallel
+  await Promise.all(fetchPromises);
 };
 
 // Get social energy level for a sign (derived from Aztro mood and compatibility)

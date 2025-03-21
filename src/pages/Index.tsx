@@ -2,16 +2,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import ZodiacCard from '@/components/ZodiacCard';
-import SwipeControls from '@/components/SwipeControls';
 import { useSwipe } from '@/hooks/useSwipe';
 import { zodiacSigns } from '@/utils/zodiacData';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
+import { prefetchHoroscopeData } from '@/services/horoscopeApi';
 
 const Index = () => {
   const [starElements, setStarElements] = useState<React.ReactNode[]>([]);
   const [user, setUser] = useState<any | null>(null);
   const [cardKey, setCardKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getUser = async () => {
@@ -55,6 +56,23 @@ const Index = () => {
     };
 
     generateStars();
+    
+    // Prefetch horoscope data for all signs
+    const prefetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Get the sign names
+        const signNames = zodiacSigns.map(sign => sign.name);
+        // Prefetch data for all signs
+        await prefetchHoroscopeData(signNames);
+      } catch (err) {
+        console.error("Error prefetching horoscope data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    prefetchData();
   }, []);
 
   const handleCardChange = () => {
@@ -121,18 +139,25 @@ const Index = () => {
               isActive={true}
               onSwipeLeft={goToPrevious}
               onSwipeRight={goToNext}
+              isLoading={isLoading}
               key={`zodiac-card-${cardKey}-${currentSign.name}`}
             />
           </div>
         </div>
       </div>
       
-      <SwipeControls
-        onPrevious={goToPrevious}
-        onNext={goToNext}
-        currentIndex={state.currentIndex}
-        total={zodiacSigns.length}
-      />
+      {/* SwipeControls have been removed since they're redundant */}
+      {/* Only show dots to indicate position */}
+      <div className="flex items-center gap-1 mt-6">
+        {Array.from({ length: zodiacSigns.length }).map((_, index) => (
+          <div
+            key={index}
+            className={`transition-all duration-300 ${
+              index === state.currentIndex ? 'bg-white w-4 h-2 rounded-full' : 'bg-white/30 w-2 h-2 rounded-full'
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 };
