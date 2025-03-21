@@ -1,26 +1,53 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { User, Heart } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { User, Sparkles, Heart, Calendar } from 'lucide-react';
 
 const MobileQuickNav: React.FC = () => {
+  const location = useLocation();
+  
+  const isActive = (path: string) => location.pathname === path;
+  
   return (
     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
-      <div className="glass px-4 py-3 rounded-full flex items-center space-x-4">
+      <div className="glass px-4 py-3 rounded-full flex items-center space-x-5">
+        <Link 
+          to="/" 
+          className={`flex flex-col items-center justify-center ${
+            isActive("/") 
+              ? "text-zodiac-stardust-gold" 
+              : "text-white/80 hover:text-white"
+          }`}
+          aria-label="Today's Horoscope"
+        >
+          <Calendar size={20} />
+          <span className="text-[10px] mt-1">Today</span>
+        </Link>
+        
         <Link 
           to="/personal" 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-zodiac-mystic-purple/20 text-zodiac-mystic-purple"
+          className={`flex flex-col items-center justify-center ${
+            isActive("/personal") 
+              ? "text-zodiac-mystic-purple" 
+              : "text-white/80 hover:text-white"
+          }`}
           aria-label="Your Personal Horoscope"
         >
           <User size={20} />
+          <span className="text-[10px] mt-1">You</span>
         </Link>
         
         <Link 
           to="/compatibility" 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-zodiac-stardust-gold/20 text-zodiac-stardust-gold"
+          className={`flex flex-col items-center justify-center ${
+            isActive("/compatibility") 
+              ? "text-zodiac-nebula-pink" 
+              : "text-white/80 hover:text-white"
+          }`}
           aria-label="Check Compatibility"
         >
           <Heart size={20} />
+          <span className="text-[10px] mt-1">Match</span>
         </Link>
       </div>
     </div>
