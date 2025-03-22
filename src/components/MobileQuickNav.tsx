@@ -1,15 +1,43 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { User, Sparkles, Heart, Calendar } from 'lucide-react';
+import { User, Heart, Calendar } from 'lucide-react';
 
 const MobileQuickNav: React.FC = () => {
   const location = useLocation();
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   
   const isActive = (path: string) => location.pathname === path;
   
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        // Scrolling down - hide nav
+        setVisible(false);
+      } else {
+        // Scrolling up - show nav
+        setVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
+  
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
+    <div 
+      className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 md:hidden transition-transform duration-300 ${
+        visible ? 'translate-y-0' : 'translate-y-20'
+      }`}
+    >
       <div className="glass px-4 py-3 rounded-full flex items-center space-x-5">
         <Link 
           to="/" 

@@ -57,14 +57,14 @@ const HoroscopeContent: React.FC<HoroscopeContentProps> = ({
   }
   
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-zodiac-mystic-purple/20 text-zodiac-mystic-purple text-xl">
+    <div className="space-y-4 animate-fade-in w-full max-w-[95vw] md:max-w-[600px]">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-zodiac-mystic-purple/20 text-zodiac-mystic-purple text-xl">
           {sign.charAt(0)}
         </div>
         <div>
-          <h3 className="text-xl font-semibold">{sign}</h3>
-          <p className="text-white/70">
+          <h3 className="text-lg md:text-xl font-semibold">{sign}</h3>
+          <p className="text-sm text-white/70">
             {month && day ? `${getMonthName(parseInt(month, 10))} ${day}` : ''}
           </p>
         </div>
@@ -76,8 +76,8 @@ const HoroscopeContent: React.FC<HoroscopeContentProps> = ({
           <TabsTrigger value="weekly">Weekly</TabsTrigger>
           <TabsTrigger value="insights">Insights</TabsTrigger>
         </TabsList>
-        <ScrollArea className="h-[400px] mt-4">
-          <TabsContent value="daily" className="mt-4 space-y-4">
+        <ScrollArea className="h-[calc(100vh-15rem)] mt-2">
+          <TabsContent value="daily" className="mt-2 space-y-4 pr-2">
             <DailyHoroscope horoscope={horoscope} />
             
             <LuckyInsights 
@@ -95,11 +95,11 @@ const HoroscopeContent: React.FC<HoroscopeContentProps> = ({
             />
           </TabsContent>
           
-          <TabsContent value="weekly" className="mt-4">
+          <TabsContent value="weekly" className="mt-2 pr-2">
             <WeeklyHoroscope weeklyHoroscope={weeklyHoroscope} />
           </TabsContent>
           
-          <TabsContent value="insights" className="mt-4 space-y-4">
+          <TabsContent value="insights" className="mt-2 space-y-4 pr-2">
             <CompatibleSigns compatibleSigns={compatibleSigns} />
             <SignCharacteristics sign={sign} />
           </TabsContent>

@@ -29,9 +29,12 @@ const NavBar: React.FC = () => {
     
     const controlNavbar = () => {
       if (typeof window !== 'undefined') {
-        if (window.scrollY > lastScrollY && window.scrollY > 80) { // Scrolling down & past header
+        // If scrolling down & past 60px
+        if (window.scrollY > lastScrollY && window.scrollY > 60) {
           setIsNavVisible(false);
-        } else { // Scrolling up
+          setIsMenuOpen(false); // Close menu when scrolling down
+        } else {
+          // Scrolling up
           setIsNavVisible(true);
         }
         setLastScrollY(window.scrollY);
@@ -62,14 +65,14 @@ const NavBar: React.FC = () => {
   return (
     <header 
       ref={navRef}
-      className={`fixed top-0 left-0 right-0 z-50 animate-fade-in nav-transition ${
-        isNavVisible ? 'nav-visible' : 'nav-scrolled-up'
+      className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
+        isNavVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      <div className="glass px-6 py-4 mx-4 mt-4 rounded-xl flex items-center justify-between">
+      <div className="glass px-4 py-3 mx-2 mt-2 md:px-6 md:py-4 md:mx-4 md:mt-4 rounded-xl flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="text-zodiac-stardust-gold text-2xl animate-pulse-subtle">✧</div>
-          <h1 className="font-display text-xl font-medium">HoroscopeSwipe</h1>
+          <h1 className="font-display text-lg md:text-xl font-medium">HoroscopeSwipe</h1>
         </Link>
         
         {/* Desktop navigation */}
@@ -129,9 +132,9 @@ const NavBar: React.FC = () => {
       
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="glass md:hidden px-4 py-4 mx-4 mt-2 rounded-xl animate-fade-in">
+        <div className="glass md:hidden px-4 py-4 mx-2 mt-1 rounded-xl animate-fade-in">
           <nav>
-            <ul className="flex flex-col space-y-4">
+            <ul className="flex flex-col space-y-3">
               {navLinks.map((link) => (
                 <li key={link.path}>
                   <Link

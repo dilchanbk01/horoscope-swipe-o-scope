@@ -96,7 +96,7 @@ const Index = () => {
     : undefined;
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center">
+    <div className="fixed inset-0 flex flex-col items-center justify-center px-4">
       <div className="stars-container">
         {starElements}
       </div>
@@ -123,7 +123,7 @@ const Index = () => {
         </div>
       </div>
       
-      <div className="flex items-center gap-1 mt-6">
+      <div className="flex items-center gap-1 mt-6 pb-16">
         {Array.from({ length: zodiacSigns.length }).map((_, index) => (
           <div
             key={index}

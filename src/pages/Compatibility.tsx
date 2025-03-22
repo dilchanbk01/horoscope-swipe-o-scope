@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { zodiacSigns } from '@/utils/zodiacData';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Heart } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 
@@ -18,6 +18,7 @@ const CompatibilityPage = () => {
     strengths: string[];
     challenges: string[];
   } | null>(null);
+  const { toast } = useToast();
 
   const generateCompatibility = () => {
     if (!firstSign || !secondSign) {
@@ -44,11 +45,14 @@ const CompatibilityPage = () => {
     const isReverseCompatible = sign2.compatibility.includes(firstSign);
 
     // Generate a deterministic compatibility percentage based on the signs
-    // and names to ensure consistent results
-    const seed = firstSign + secondSign + firstName + secondName;
+    // (Not using names to ensure consistency when names are changed)
+    let combinedSignValue = firstSign.length + secondSign.length;
+    
+    // Create a unique hash for this combination that will remain consistent
+    const signPair = [firstSign, secondSign].sort().join('');
     let hash = 0;
-    for (let i = 0; i < seed.length; i++) {
-      hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+    for (let i = 0; i < signPair.length; i++) {
+      hash = (hash << 5) - hash + signPair.charCodeAt(i);
       hash |= 0;
     }
     
