@@ -60,6 +60,7 @@ const NavBar: React.FC = () => {
     { path: '/', label: 'Horoscopes' },
     { path: '/personal', label: 'Your Horoscope' },
     { path: '/compatibility', label: 'Compatibility' },
+    { path: '/blog', label: 'Blog' },
   ];
   
   return (
@@ -72,7 +73,7 @@ const NavBar: React.FC = () => {
       <div className="glass px-4 py-3 mx-2 mt-2 md:px-6 md:py-4 md:mx-4 md:mt-4 rounded-xl flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="text-zodiac-stardust-gold text-2xl animate-pulse-subtle">✧</div>
-          <h1 className="font-display text-lg md:text-xl font-medium">HoroscopeSwipe</h1>
+          <h1 className="font-display text-lg md:text-xl font-medium">Zodible</h1>
         </Link>
         
         {/* Desktop navigation */}

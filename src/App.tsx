@@ -9,6 +9,7 @@ import MobileQuickNav from "./components/MobileQuickNav";
 import Index from "./pages/Index";
 import PersonalPage from "./pages/Personal";
 import CompatibilityPage from "./pages/Compatibility";
+import BlogPage from "./pages/Blog";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -41,6 +42,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/personal" element={<PersonalPage />} />
                 <Route path="/compatibility" element={<CompatibilityPage />} />
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:slug" element={<BlogPage />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="*" element={<NotFound />} />

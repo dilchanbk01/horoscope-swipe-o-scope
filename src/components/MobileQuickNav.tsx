@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { User, Heart, Calendar } from 'lucide-react';
+import { User, Heart, Calendar, BookOpen } from 'lucide-react';
 
 const MobileQuickNav: React.FC = () => {
   const location = useLocation();
@@ -38,7 +38,7 @@ const MobileQuickNav: React.FC = () => {
         visible ? 'translate-y-0' : 'translate-y-20'
       }`}
     >
-      <div className="glass px-4 py-3 rounded-full flex items-center space-x-5">
+      <div className="glass px-6 py-3 rounded-full flex items-center justify-between w-[90vw] max-w-md">
         <Link 
           to="/" 
           className={`flex flex-col items-center justify-center ${
@@ -49,7 +49,7 @@ const MobileQuickNav: React.FC = () => {
           aria-label="Today's Horoscope"
         >
           <Calendar size={20} />
-          <span className="text-[10px] mt-1">Today</span>
+          <span className="text-xs mt-1">Daily Horoscope</span>
         </Link>
         
         <Link 
@@ -62,7 +62,7 @@ const MobileQuickNav: React.FC = () => {
           aria-label="Your Personal Horoscope"
         >
           <User size={20} />
-          <span className="text-[10px] mt-1">You</span>
+          <span className="text-xs mt-1">Personal</span>
         </Link>
         
         <Link 
@@ -75,7 +75,20 @@ const MobileQuickNav: React.FC = () => {
           aria-label="Check Compatibility"
         >
           <Heart size={20} />
-          <span className="text-[10px] mt-1">Match</span>
+          <span className="text-xs mt-1">Compatibility</span>
+        </Link>
+        
+        <Link 
+          to="/blog" 
+          className={`flex flex-col items-center justify-center ${
+            isActive("/blog") 
+              ? "text-zodiac-stardust-gold" 
+              : "text-white/80 hover:text-white"
+          }`}
+          aria-label="Astrology Blog"
+        >
+          <BookOpen size={20} />
+          <span className="text-xs mt-1">Blog</span>
         </Link>
       </div>
     </div>
