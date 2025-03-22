@@ -3,7 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import NavBar from "./components/NavBar";
 import MobileQuickNav from "./components/MobileQuickNav";
 import Index from "./pages/Index";
@@ -29,6 +30,16 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+        <Helmet>
+          <title>Zodible - Daily Horoscopes & Astrological Insights</title>
+          <meta name="description" content="Discover your daily horoscope, personalized astrological insights, and compatibility readings at Zodible." />
+          <meta property="og:title" content="Zodible - Your Personal Astrology Guide" />
+          <meta property="og:description" content="Get daily horoscopes, personalized astrological readings, and compatibility insights." />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://zodible.site" />
+          <meta property="og:image" content="/og-image.png" />
+          <link rel="canonical" href="https://zodible.site" />
+        </Helmet>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -46,7 +57,8 @@ const App = () => (
                 <Route path="/blog/:slug" element={<BlogPage />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/404" element={<NotFound />} />
+                <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>
             </div>
             <MobileQuickNav />

@@ -48,8 +48,8 @@ const MobileQuickNav: React.FC = () => {
           }`}
           aria-label="Today's Horoscope"
         >
-          <Calendar size={20} />
-          <span className="text-xs mt-1">Daily Horoscope</span>
+          <Calendar size={20} className="mb-1" />
+          <span className="text-xs text-center">Daily Horoscope</span>
         </Link>
         
         <Link 
@@ -61,8 +61,8 @@ const MobileQuickNav: React.FC = () => {
           }`}
           aria-label="Your Personal Horoscope"
         >
-          <User size={20} />
-          <span className="text-xs mt-1">Personal Horoscope</span>
+          <User size={20} className="mb-1" />
+          <span className="text-xs text-center">Personal Horoscope</span>
         </Link>
         
         <Link 
@@ -74,8 +74,8 @@ const MobileQuickNav: React.FC = () => {
           }`}
           aria-label="Check Compatibility"
         >
-          <Heart size={20} />
-          <span className="text-xs mt-1">Compatibility</span>
+          <Heart size={20} className="mb-1" />
+          <span className="text-xs text-center">Compatibility</span>
         </Link>
       </div>
     </div>
