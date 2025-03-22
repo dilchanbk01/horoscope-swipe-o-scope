@@ -33,7 +33,6 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
     horoscope: false,
     energy: false
   });
-  const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const isInitialMount = useRef(true);
@@ -54,6 +53,8 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
           .catch(error => {
             console.error("Error fetching horoscope:", error);
             setLoadState(prev => ({...prev, horoscope: true}));
+            // Use sign's default horoscope as fallback
+            setDailyHoroscope(sign.dailyHoroscope || "The cosmic forces are currently unpredictable. Take time to reflect and trust your intuition today.");
           });
         
         // Get social energy level in parallel
@@ -65,6 +66,8 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
           .catch(error => {
             console.error("Error fetching energy level:", error);
             setLoadState(prev => ({...prev, energy: true}));
+            // Set a default energy level as fallback
+            setSocialEnergyLevel(Math.floor(50 + Math.random() * 30));
           });
         
         // Check if sign is favorited by user
@@ -84,6 +87,7 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
           description: "Failed to load your personalized horoscope",
           variant: "destructive"
         });
+        setLoadState({horoscope: true, energy: true});
       }
     };
     
@@ -100,11 +104,6 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
             console.error("Error checking if sign is favorited:", error);
           });
       }
-    }
-    
-    // Reset scroll position when sign changes
-    if (scrollRef.current && !isInitialMount.current) {
-      scrollRef.current.scrollTop = 0;
     }
     
     isInitialMount.current = false;
@@ -157,7 +156,7 @@ const ZodiacCard: React.FC<ZodiacCardProps> = ({
         
         {/* Card body - with ScrollArea for better scrolling */}
         <ScrollArea className="flex-1">
-          <div className="p-6" ref={scrollRef}>
+          <div className="p-6">
             <div className="mb-6">
               <h3 className="text-lg text-white/90 font-medium mb-2">Today's Horoscope</h3>
               {isLoading || externalLoading ? (

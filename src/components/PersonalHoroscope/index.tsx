@@ -32,6 +32,7 @@ const PersonalHoroscope: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   
+  // Load saved birth date on component mount
   useEffect(() => {
     const savedDay = localStorage.getItem('zodiac_birth_day');
     const savedMonth = localStorage.getItem('zodiac_birth_month');
@@ -43,6 +44,7 @@ const PersonalHoroscope: React.FC = () => {
     }
   }, []);
   
+  // Handle birth date submission and fetch horoscope data
   const handleBirthDateSubmit = async (day: string, month: string) => {
     setIsLoading(true);
     
@@ -61,36 +63,39 @@ const PersonalHoroscope: React.FC = () => {
           setIsFavorite(favorited);
         }
         
+        // Save to localStorage for future visits
+        localStorage.setItem('zodiac_birth_day', day);
+        localStorage.setItem('zodiac_birth_month', month);
+        
+        // Fetch horoscope data from our edge function
         const { data: aztroData, error: aztroError } = await supabase.functions.invoke("aztro-horoscope", {
           body: { sign: zodiacSign.name.toLowerCase(), day: "today" }
         });
 
         if (aztroError) {
-          throw new Error(aztroError.message);
+          console.error("Error fetching aztro data:", aztroError);
+          toast({
+            title: "Oops!",
+            description: "We had trouble connecting to the stars. Please try again.",
+            variant: "destructive"
+          });
+          setIsLoading(false);
+          return;
         }
         
-        // Generate an enhanced, longer horoscope by combining multiple elements
-        const horoscopeBase = aztroData.description;
-        const enhancedHoroscope = `${horoscopeBase} The cosmic alignment suggests that ${
-          Math.random() > 0.5 
-            ? `focusing on ${aztroData.color}-colored objects might bring you unexpected insights.` 
-            : `being mindful of your energy during ${aztroData.lucky_time} could lead to significant breakthroughs.`
-        } ${
-          Math.random() > 0.5
-            ? `Your ruling planet is highlighting aspects of your relationships today.`
-            : `Stars indicate this is a good time for self-reflection and personal growth.`
-        } Consider the number ${aztroData.lucky_number.split(',')[0]} as significant in your decision-making process today.`;
-        
-        setHoroscope(enhancedHoroscope);
+        // Set horoscope data
+        setHoroscope(aztroData.description);
         setLuckyColor(aztroData.color);
         setLuckyTime(aztroData.lucky_time);
         setMood(aztroData.mood);
         
+        // Parse lucky numbers
         const luckyNumbersFromApi = aztroData.lucky_number.split(',').map((num: string) => parseInt(num.trim(), 10));
         setLuckyNumbers(luckyNumbersFromApi.filter((num: number) => !isNaN(num)));
         
         setCompatibleSigns([aztroData.compatibility]);
         
+        // Generate weekly horoscope
         const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         const weeklyTexts = weekdays.map(day => {
           const seed = zodiacSign.name + day;
@@ -137,6 +142,7 @@ const PersonalHoroscope: React.FC = () => {
         
         setWeeklyHoroscope(weeklyTexts);
         
+        // Calculate current moon phase
         const moonPhases = [
           'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
           'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
@@ -146,6 +152,7 @@ const PersonalHoroscope: React.FC = () => {
         const phaseIndex = Math.floor((dayOfYear % 29.5) / 3.7);
         setMoonPhase(moonPhases[phaseIndex]);
         
+        // Calculate energy levels
         const moodEnergyMap: Record<string, number> = {
           'happy': 85, 'cheerful': 90, 'energetic': 95,
           'calm': 60, 'content': 70, 'relaxed': 65,
@@ -181,7 +188,7 @@ const PersonalHoroscope: React.FC = () => {
         console.error("Error fetching horoscope data:", error);
         toast({
           title: "Error",
-          description: "Failed to load your personalized horoscope",
+          description: "Failed to load your personalized horoscope. The stars are being shy today.",
           variant: "destructive"
         });
       } finally {
@@ -190,13 +197,14 @@ const PersonalHoroscope: React.FC = () => {
     } else {
       toast({
         title: "Error",
-        description: "Could not determine your zodiac sign",
+        description: "Could not determine your zodiac sign. Please check your birth date.",
         variant: "destructive"
       });
       setIsLoading(false);
     }
   };
   
+  // Reset horoscope and clear saved birth date
   const resetHoroscope = () => {
     setSign(null);
     setHoroscope(null);
@@ -205,6 +213,7 @@ const PersonalHoroscope: React.FC = () => {
     localStorage.removeItem('zodiac_birth_month');
   };
   
+  // Toggle favorite status for the current sign
   const handleToggleFavorite = async () => {
     if (!user) {
       toast({

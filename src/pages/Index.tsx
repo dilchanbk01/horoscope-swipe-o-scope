@@ -1,9 +1,8 @@
+
 import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import ZodiacCard from '@/components/ZodiacCard';
 import { useSwipe } from '@/hooks/useSwipe';
 import { zodiacSigns } from '@/utils/zodiacData';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { prefetchHoroscopeData } from '@/services/horoscopeApi';
 
@@ -75,15 +74,6 @@ const Index = () => {
     setCardKey(prev => prev + 1);
   };
 
-  const handleSwipeLeft = (index: number) => {
-    console.log('Swiped left (dislike):', zodiacSigns[index].name);
-  };
-
-  const handleSwipeRight = (index: number) => {
-    const signName = zodiacSigns[index].name;
-    console.log('Swiped right (explore):', signName);
-  };
-
   const {
     handlers,
     state,
@@ -91,8 +81,8 @@ const Index = () => {
     goToPrevious,
     containerRef,
   } = useSwipe({
-    onSwipeLeft: handleSwipeLeft,
-    onSwipeRight: handleSwipeRight,
+    onSwipeLeft: () => {},
+    onSwipeRight: () => {},
     itemsLength: zodiacSigns.length,
     onCardChange: handleCardChange
   });
@@ -106,7 +96,7 @@ const Index = () => {
     : undefined;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-6rem)]">
+    <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center">
       <div className="stars-container">
         {starElements}
       </div>
