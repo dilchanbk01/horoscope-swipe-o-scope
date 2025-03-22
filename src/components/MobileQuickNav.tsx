@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { User, Heart, Calendar, BookOpen } from 'lucide-react';
+import { User, Heart, Calendar } from 'lucide-react';
 
 const MobileQuickNav: React.FC = () => {
   const location = useLocation();
@@ -41,7 +41,7 @@ const MobileQuickNav: React.FC = () => {
       <div className="glass px-6 py-3 rounded-full flex items-center justify-between w-[90vw] max-w-md">
         <Link 
           to="/" 
-          className={`flex flex-col items-center justify-center ${
+          className={`flex flex-col items-center justify-center w-1/3 ${
             isActive("/") 
               ? "text-zodiac-stardust-gold" 
               : "text-white/80 hover:text-white"
@@ -54,7 +54,7 @@ const MobileQuickNav: React.FC = () => {
         
         <Link 
           to="/personal" 
-          className={`flex flex-col items-center justify-center ${
+          className={`flex flex-col items-center justify-center w-1/3 ${
             isActive("/personal") 
               ? "text-zodiac-mystic-purple" 
               : "text-white/80 hover:text-white"
@@ -62,12 +62,12 @@ const MobileQuickNav: React.FC = () => {
           aria-label="Your Personal Horoscope"
         >
           <User size={20} />
-          <span className="text-xs mt-1">Personal</span>
+          <span className="text-xs mt-1">Personal Horoscope</span>
         </Link>
         
         <Link 
           to="/compatibility" 
-          className={`flex flex-col items-center justify-center ${
+          className={`flex flex-col items-center justify-center w-1/3 ${
             isActive("/compatibility") 
               ? "text-zodiac-nebula-pink" 
               : "text-white/80 hover:text-white"
@@ -76,19 +76,6 @@ const MobileQuickNav: React.FC = () => {
         >
           <Heart size={20} />
           <span className="text-xs mt-1">Compatibility</span>
-        </Link>
-        
-        <Link 
-          to="/blog" 
-          className={`flex flex-col items-center justify-center ${
-            isActive("/blog") 
-              ? "text-zodiac-stardust-gold" 
-              : "text-white/80 hover:text-white"
-          }`}
-          aria-label="Astrology Blog"
-        >
-          <BookOpen size={20} />
-          <span className="text-xs mt-1">Blog</span>
         </Link>
       </div>
     </div>

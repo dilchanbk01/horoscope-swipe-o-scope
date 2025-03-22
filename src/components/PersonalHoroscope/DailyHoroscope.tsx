@@ -1,7 +1,8 @@
 
-import React from 'react';
-import { Calendar, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDate } from '@/utils/dateUtils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface DailyHoroscopeProps {
   horoscope: string | null;
@@ -9,6 +10,8 @@ interface DailyHoroscopeProps {
 }
 
 const DailyHoroscope: React.FC<DailyHoroscopeProps> = ({ horoscope, mood }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
   if (!horoscope) {
     return (
       <div className="bg-white/5 rounded-lg p-4">
@@ -36,6 +39,10 @@ const DailyHoroscope: React.FC<DailyHoroscopeProps> = ({ horoscope, mood }) => {
   // Make paragraphs smaller for better reading experience
   const paragraphs = horoscope.match(/(.{1,100})(?:\s|$)/g) || [];
   
+  // For the preview, only show first half of paragraphs, or max 2
+  const previewParagraphs = paragraphs.slice(0, Math.min(2, Math.ceil(paragraphs.length / 2)));
+  const hiddenParagraphs = paragraphs.slice(previewParagraphs.length);
+  
   return (
     <div className="bg-white/5 rounded-lg p-5">
       <div className="flex items-center gap-2 text-sm text-white/70 mb-4">
@@ -48,11 +55,41 @@ const DailyHoroscope: React.FC<DailyHoroscopeProps> = ({ horoscope, mood }) => {
         </div>
       </div>
       
-      <div className="space-y-3">
-        {paragraphs.map((paragraph, index) => (
-          <p key={index} className="text-white/90">{paragraph}</p>
-        ))}
-      </div>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-3">
+        <div className="space-y-3">
+          {previewParagraphs.map((paragraph, index) => (
+            <p key={`preview-${index}`} className="text-white/90">{paragraph}</p>
+          ))}
+        </div>
+        
+        {hiddenParagraphs.length > 0 && (
+          <>
+            <CollapsibleContent className="space-y-3 mt-2">
+              {hiddenParagraphs.map((paragraph, index) => (
+                <p key={`hidden-${index}`} className="text-white/90">{paragraph}</p>
+              ))}
+            </CollapsibleContent>
+            
+            <CollapsibleTrigger asChild>
+              <button 
+                className="flex items-center gap-1 text-sm text-zodiac-stardust-gold mt-2 hover:text-zodiac-stardust-gold/80 transition-colors"
+              >
+                {isOpen ? (
+                  <>
+                    <ChevronUp size={16} />
+                    <span>See Less</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={16} />
+                    <span>See More</span>
+                  </>
+                )}
+              </button>
+            </CollapsibleTrigger>
+          </>
+        )}
+      </Collapsible>
       
       {mood && (
         <div className="mt-4 flex items-center gap-2 text-sm">

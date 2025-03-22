@@ -96,12 +96,12 @@ const Index = () => {
     : undefined;
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center px-4">
-      <div className="stars-container">
+    <div className="fixed inset-0 flex flex-col items-center justify-center px-4 overflow-hidden">
+      <div className="stars-container absolute inset-0 pointer-events-none">
         {starElements}
       </div>
       
-      <div className="w-full max-w-[600px] h-[450px] md:h-[500px]">
+      <div className="w-full max-w-[600px] h-[450px] md:h-[500px] relative">
         <div 
           ref={containerRef}
           className="swipeable-card-stack w-full max-w-[600px] h-[450px] md:h-[500px]"
@@ -123,7 +123,7 @@ const Index = () => {
         </div>
       </div>
       
-      <div className="flex items-center gap-1 mt-6 pb-16">
+      <div className="flex items-center gap-1 mt-6 pb-10">
         {Array.from({ length: zodiacSigns.length }).map((_, index) => (
           <div
             key={index}
