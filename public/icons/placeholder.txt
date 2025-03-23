@@ -1,0 +1,13 @@
+
+You need to create the following icon sizes for your PWA:
+- icon-72x72.png
+- icon-96x96.png 
+- icon-128x128.png
+- icon-144x144.png
+- icon-152x152.png
+- icon-192x192.png
+- icon-384x384.png
+- icon-512x512.png
+
+These should be square PNG images with a transparent background featuring your Zodible logo.
+You can use a tool like Figma, Photoshop, or online converters to create these from your existing logo.
