@@ -19,14 +19,14 @@ const PersonalPage = () => {
         <meta property="og:description" content="Get your personalized horoscope reading based on your birth date and zodiac sign." />
         <meta property="og:url" content="https://zodible.site/personal" />
       </Helmet>
-      <div className="flex flex-col items-center justify-start min-h-[calc(100vh-6rem)] py-4 px-2">
-        <div className="text-center mb-4 animate-fade-in">
+      <div className="flex flex-col items-center justify-start min-h-[calc(100vh-6rem)] py-8 px-4 max-w-7xl mx-auto">
+        <div className="text-center mb-6 animate-fade-in w-full">
           <h1 className="text-2xl md:text-4xl font-display font-bold">
             Your Personal Horoscope
           </h1>
         </div>
         
-        <div className="w-full max-w-3xl">
+        <div className="w-full max-w-3xl px-2 md:px-0">
           <PersonalHoroscope />
         </div>
       </div>
